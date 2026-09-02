@@ -1,0 +1,788 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Healthy Nation - Your Health Companion</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/echarts@5.4.3/dist/echarts.min.js"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+        }
+        
+        .vital-card {
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+            transition: all 0.3s ease;
+            border: 2px solid transparent;
+        }
+        
+        .vital-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 12px 24px rgba(0, 0, 0, 0.1);
+        }
+        
+        .vital-card.normal {
+            border-color: #059669;
+        }
+        
+        .vital-card.warning {
+            border-color: #d97706;
+        }
+        
+        .vital-card.critical {
+            border-color: #dc2626;
+        }
+        
+        .quick-action-btn {
+            background: linear-gradient(135deg, #2563eb 0%, #0891b2 100%);
+            transition: all 0.3s ease;
+        }
+        
+        .quick-action-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 16px rgba(37, 99, 235, 0.3);
+        }
+        
+        .appointment-card {
+            background: white;
+            border-radius: 12px;
+            border-left: 4px solid #2563eb;
+        }
+        
+        .notification-banner {
+            border-radius: 12px;
+            border-left: 4px solid;
+        }
+        
+        .notification-banner.success {
+            border-left-color: #059669;
+            background: linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%);
+        }
+        
+        .notification-banner.warning {
+            border-left-color: #d97706;
+            background: linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%);
+        }
+        
+        .notification-banner.info {
+            border-left-color: #2563eb;
+            background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%);
+        }
+        
+        .bottom-nav {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-top: 1px solid rgba(0, 0, 0, 0.1);
+        }
+        
+        .nav-item {
+            transition: all 0.3s ease;
+        }
+        
+        .nav-item.active {
+            color: #2563eb;
+        }
+        
+        .nav-item:hover {
+            color: #2563eb;
+            transform: translateY(-2px);
+        }
+        
+        .health-score-ring {
+            stroke-dasharray: 251.2;
+            stroke-dashoffset: 251.2;
+            transition: stroke-dashoffset 2s ease-in-out;
+        }
+        
+        .pulse-dot {
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+        
+        .gradient-text {
+            background: linear-gradient(135deg, #2563eb 0%, #0891b2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .floating-animation {
+            animation: float 6s ease-in-out infinite;
+        }
+        
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+        }
+    </style>
+</head>
+<body class="min-h-screen pb-20">
+    <!-- Header -->
+    <header class="bg-white shadow-sm border-b border-gray-200">
+        <div class="max-w-7xl mx-auto px-4 py-4">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center space-x-3">
+                    <div class="w-10 h-10 bg-gradient-to-r from-blue-600 to-teal-600 rounded-full flex items-center justify-center">
+                        <i class="fas fa-heartbeat text-white text-lg"></i>
+                    </div>
+                    <div>
+                        <h1 class="text-xl font-bold gradient-text">Healthy Nation</h1>
+                        <p class="text-sm text-gray-600">Your Health Companion</p>
+                    </div>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <button class="relative p-2 text-gray-600 hover:text-blue-600 transition-colors">
+                        <i class="fas fa-bell text-xl"></i>
+                        <span class="absolute -top-1 -right-1 w-5 h-5 bg-red-500 text-white text-xs rounded-full flex items-center justify-center">3</span>
+                    </button>
+                    <button class="w-10 h-10 rounded-full bg-gray-200 overflow-hidden">
+                        <img src="https://kimi-web-img.moonshot.cn/img/doreenfamilymedical.com.au/42cf845047b409d68f0fccec1bd19c9dcf3ce9b2.jpg" alt="Profile" class="w-full h-full object-cover">
+                    </button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="max-w-7xl mx-auto px-4 py-6 space-y-6">
+        <!-- Welcome Section -->
+        <section class="fade-in">
+            <div class="bg-gradient-to-r from-blue-600 to-teal-600 rounded-2xl p-6 text-white relative overflow-hidden">
+                <div class="relative z-10">
+                    <h2 class="text-2xl font-bold mb-2">Good Morning, Sarah!</h2>
+                    <p class="text-blue-100 mb-4">Your health looks great today. Keep up the good work!</p>
+                    <div class="flex items-center space-x-4">
+                        <div class="text-center">
+                            <div class="text-2xl font-bold">85</div>
+                            <div class="text-sm text-blue-100">Health Score</div>
+                        </div>
+                        <div class="text-center">
+                            <div class="text-2xl font-bold">7</div>
+                            <div class="text-sm text-blue-100">Day Streak</div>
+                        </div>
+                        <div class="text-center">
+                            <div class="text-2xl font-bold">3</div>
+                            <div class="text-sm text-blue-100">Upcoming</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="absolute top-0 right-0 w-32 h-32 bg-white bg-opacity-10 rounded-full -mr-8 -mt-8"></div>
+                <div class="absolute bottom-0 left-0 w-24 h-24 bg-white bg-opacity-10 rounded-full -ml-4 -mb-4"></div>
+            </div>
+        </section>
+
+        <!-- Vitals Summary Cards -->
+        <section class="slide-in">
+            <h3 class="text-xl font-semibold text-gray-900 mb-4">Today's Vitals</h3>
+            <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
+                <!-- Heart Rate Card -->
+                <div class="vital-card normal p-4 text-center">
+                    <div class="flex items-center justify-center mb-2">
+                        <div class="w-8 h-8 bg-red-100 rounded-full flex items-center justify-center mr-2">
+                            <i class="fas fa-heart text-red-500 text-sm"></i>
+                        </div>
+                        <div class="pulse-dot w-2 h-2 bg-red-500 rounded-full"></div>
+                    </div>
+                    <div class="text-2xl font-bold text-gray-900" id="heart-rate">72</div>
+                    <div class="text-sm text-gray-600">Heart Rate</div>
+                    <div class="text-xs text-green-600 mt-1">↗ Normal</div>
+                </div>
+
+                <!-- Blood Pressure Card -->
+                <div class="vital-card normal p-4 text-center">
+                    <div class="flex items-center justify-center mb-2">
+                        <div class="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center mr-2">
+                            <i class="fas fa-tint text-blue-500 text-sm"></i>
+                        </div>
+                    </div>
+                    <div class="text-lg font-bold text-gray-900">120/80</div>
+                    <div class="text-sm text-gray-600">Blood Pressure</div>
+                    <div class="text-xs text-green-600 mt-1">↗ Normal</div>
+                </div>
+
+                <!-- SpO2 Card -->
+                <div class="vital-card normal p-4 text-center">
+                    <div class="flex items-center justify-center mb-2">
+                        <div class="w-8 h-8 bg-purple-100 rounded-full flex items-center justify-center mr-2">
+                            <i class="fas fa-lungs text-purple-500 text-sm"></i>
+                        </div>
+                    </div>
+                    <div class="text-2xl font-bold text-gray-900" id="spO2-value">98</div>
+                    <div class="text-sm text-gray-600">SpO₂</div>
+                    <div class="text-xs text-green-600 mt-1">↗ Normal</div>
+                </div>
+
+                <!-- Glucose Card -->
+                <div class="vital-card normal p-4 text-center">
+                    <div class="flex items-center justify-center mb-2">
+                        <div class="w-8 h-8 bg-yellow-100 rounded-full flex items-center justify-center mr-2">
+                            <i class="fas fa-tint text-yellow-500 text-sm"></i>
+                        </div>
+                    </div>
+                    <div class="text-2xl font-bold text-gray-900" id="glucose-value">95</div>
+                    <div class="text-sm text-gray-600">Glucose</div>
+                    <div class="text-xs text-green-600 mt-1">↗ Normal</div>
+                </div>
+
+                <!-- Steps Card -->
+                <div class="vital-card normal p-4 text-center">
+                    <div class="flex items-center justify-center mb-2">
+                        <div class="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center mr-2">
+                            <i class="fas fa-walking text-green-500 text-sm"></i>
+                        </div>
+                    </div>
+                    <div class="text-2xl font-bold text-gray-900" id="steps-value">8,432</div>
+                    <div class="text-sm text-gray-600">Steps</div>
+                    <div class="w-full bg-gray-200 rounded-full h-2 mt-2">
+                        <div id="steps-progress" class="bg-green-500 h-2 rounded-full" style="width: 84%"></div>
+                    </div>
+                    <div class="text-xs text-gray-500 mt-1">84% of goal</div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Quick Actions -->
+        <section class="slide-in">
+            <h3 class="text-xl font-semibold text-gray-900 mb-4">Quick Actions</h3>
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <button id="start-checkup" class="quick-action-btn p-6 rounded-xl text-white text-center hover:shadow-lg transition-all">
+                    <div class="w-12 h-12 bg-white bg-opacity-20 rounded-full flex items-center justify-center mx-auto mb-3">
+                        <i class="fas fa-stethoscope text-xl"></i>
+                    </div>
+                    <div class="font-semibold">Start Check-Up</div>
+                    <div class="text-sm text-blue-100 mt-1">AI Assessment</div>
+                </button>
+
+                <button id="connect-device" class="quick-action-btn p-6 rounded-xl text-white text-center hover:shadow-lg transition-all">
+                    <div class="w-12 h-12 bg-white bg-opacity-20 rounded-full flex items-center justify-center mx-auto mb-3">
+                        <i class="fas fa-bluetooth text-xl"></i>
+                    </div>
+                    <div class="font-semibold">Connect Device</div>
+                    <div class="text-sm text-blue-100 mt-1">Sync Wearables</div>
+                </button>
+
+                <button id="view-history" class="quick-action-btn p-6 rounded-xl text-white text-center hover:shadow-lg transition-all">
+                    <div class="w-12 h-12 bg-white bg-opacity-20 rounded-full flex items-center justify-center mx-auto mb-3">
+                        <i class="fas fa-file-medical text-xl"></i>
+                    </div>
+                    <div class="font-semibold">Medical History</div>
+                    <div class="text-sm text-blue-100 mt-1">View Records</div>
+                </button>
+
+                <button onclick="window.location.href='delivery.html'" class="quick-action-btn p-6 rounded-xl text-white text-center hover:shadow-lg transition-all">
+                    <div class="w-12 h-12 bg-white bg-opacity-20 rounded-full flex items-center justify-center mx-auto mb-3">
+                        <i class="fas fa-shipping-fast text-xl"></i>
+                    </div>
+                    <div class="font-semibold">Order Medicines</div>
+                    <div class="text-sm text-blue-100 mt-1">Quick Delivery</div>
+                </button>
+            </div>
+        </section>
+
+        <!-- Upcoming Appointments -->
+        <section class="slide-in">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-xl font-semibold text-gray-900">Upcoming Appointments</h3>
+                <button onclick="window.location.href='doctors.html'" class="text-blue-600 text-sm font-medium hover:underline">View All</button>
+            </div>
+            <div id="appointments-container" class="space-y-4">
+                <!-- Appointment cards will be populated by JavaScript -->
+                <div class="appointment-card p-4 shadow-md">
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <h4 class="font-semibold text-gray-900">Dr. Sarah Williams</h4>
+                            <p class="text-gray-600 text-sm">Endocrinologist</p>
+                            <p class="text-sm text-gray-500">Dec 12, 2024 at 10:30 AM</p>
+                            <p class="text-sm text-blue-600">🏥 Clinic Visit</p>
+                        </div>
+                        <div class="text-right">
+                            <div class="countdown text-sm font-medium text-red-600" data-date="2024-12-12T10:30">In 2 days</div>
+                            <div class="mt-2 space-x-2">
+                                <button class="text-blue-600 text-sm hover:underline" onclick="viewAppointment(1)">View</button>
+                                <button class="text-green-600 text-sm hover:underline" onclick="addToCalendar(1)">Calendar</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="appointment-card p-4 shadow-md">
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <h4 class="font-semibold text-gray-900">Dr. James Davis</h4>
+                            <p class="text-gray-600 text-sm">Dermatologist</p>
+                            <p class="text-sm text-gray-500">Dec 15, 2024 at 2:00 PM</p>
+                            <p class="text-sm text-green-600">📹 Video Call</p>
+                        </div>
+                        <div class="text-right">
+                            <div class="countdown text-sm font-medium text-orange-600" data-date="2024-12-15T14:00">In 5 days</div>
+                            <div class="mt-2 space-x-2">
+                                <button class="text-blue-600 text-sm hover:underline" onclick="viewAppointment(2)">View</button>
+                                <button class="text-green-600 text-sm hover:underline" onclick="addToCalendar(2)">Calendar</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Notification Banners -->
+        <section class="slide-in">
+            <div id="notification-banners">
+                <!-- Notification banners will be populated by JavaScript -->
+                <div class="notification-banner success p-4 rounded-lg shadow-md cursor-pointer" onclick="window.location.href='health.html'">
+                    <div class="flex justify-between items-center">
+                        <div>
+                            <h4 class="font-semibold text-green-800">Great Health Score!</h4>
+                            <p class="text-sm text-green-700">Your weekly health score is 85/100. Keep it up!</p>
+                        </div>
+                        <button class="text-sm font-medium text-green-800 underline">View Report</button>
+                    </div>
+                </div>
+
+                <div class="notification-banner info p-4 rounded-lg shadow-md cursor-pointer" onclick="window.location.href='delivery.html'">
+                    <div class="flex justify-between items-center">
+                        <div>
+                            <h4 class="font-semibold text-blue-800">🚚 Nearby Pharmacy Available</h4>
+                            <p class="text-sm text-blue-700">HealthPlus Pharmacy (0.8 km) • 12-15 min delivery • Free delivery over $25</p>
+                            <div class="flex items-center mt-2 space-x-2">
+                                <span class="bg-green-100 text-green-800 px-2 py-1 rounded-full text-xs">Open</span>
+                                <span class="bg-blue-100 text-blue-800 px-2 py-1 rounded-full text-xs">Prescription Accepted</span>
+                            </div>
+                        </div>
+                        <button class="text-sm font-medium text-blue-800 underline">Order Now</button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Notification Center Widget -->
+        <section class="slide-in">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-xl font-semibold text-gray-900">Notifications</h3>
+                <div class="flex space-x-2">
+                    <button onclick="markAllNotificationsRead()" class="text-sm text-blue-600 hover:underline">
+                        Mark All Read
+                    </button>
+                    <button onclick="openNotificationSettings()" class="text-sm text-gray-600 hover:underline">
+                        <i class="fas fa-cog"></i>
+                    </button>
+                </div>
+            </div>
+            
+            <div class="bg-white rounded-xl p-6 shadow-md">
+                <div id="notification-list" class="space-y-4">
+                    <!-- Notifications will be populated here -->
+                </div>
+                
+                <div class="mt-6 pt-4 border-t border-gray-200">
+                    <button onclick="viewAllNotifications()" class="w-full text-center text-blue-600 hover:text-blue-800 transition-colors">
+                        View All Notifications
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <!-- Health Insights -->
+        <section class="slide-in">
+            <h3 class="text-xl font-semibold text-gray-900 mb-4">Health Insights</h3>
+            <div class="bg-white rounded-xl p-6 shadow-md">
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div class="text-center">
+                        <div class="relative w-20 h-20 mx-auto mb-4">
+                            <svg class="w-20 h-20 transform -rotate-90">
+                                <circle cx="40" cy="40" r="36" stroke="#e5e7eb" stroke-width="8" fill="none"/>
+                                <circle cx="40" cy="40" r="36" stroke="#059669" stroke-width="8" fill="none" 
+                                        class="health-score-ring" style="stroke-dashoffset: 62.8"/>
+                            </svg>
+                            <div class="absolute inset-0 flex items-center justify-center">
+                                <span class="text-xl font-bold text-gray-900">85%</span>
+                            </div>
+                        </div>
+                        <h4 class="font-semibold text-gray-900">Overall Health</h4>
+                        <p class="text-sm text-gray-600">Excellent</p>
+                    </div>
+                    
+                    <div class="text-center">
+                        <div class="text-3xl font-bold text-blue-600 mb-2">7.2k</div>
+                        <h4 class="font-semibold text-gray-900">Avg Daily Steps</h4>
+                        <p class="text-sm text-gray-600">This week</p>
+                    </div>
+                    
+                    <div class="text-center">
+                        <div class="text-3xl font-bold text-green-600 mb-2">8h</div>
+                        <h4 class="font-semibold text-gray-900">Avg Sleep</h4>
+                        <p class="text-sm text-gray-600">This week</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Emergency FAB -->
+    <button onclick="emergencySystem.triggerEmergency()" class="fixed bottom-24 right-6 w-14 h-14 bg-red-600 text-white rounded-full shadow-lg flex items-center justify-center z-40 hover:bg-red-700 transition-colors">
+        <i class="fas fa-exclamation text-xl"></i>
+    </button>
+
+    <!-- Bottom Navigation -->
+    <nav class="bottom-nav fixed bottom-0 left-0 right-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 py-3">
+            <div class="flex justify-around items-center">
+                <a href="index.html" class="nav-item active flex flex-col items-center space-y-1">
+                    <i class="fas fa-home text-xl"></i>
+                    <span class="text-xs font-medium">Home</span>
+                </a>
+                <a href="health.html" class="nav-item flex flex-col items-center space-y-1 text-gray-600">
+                    <i class="fas fa-heartbeat text-xl"></i>
+                    <span class="text-xs font-medium">Health</span>
+                </a>
+                <a href="assistant.html" class="nav-item flex flex-col items-center space-y-1 text-gray-600">
+                    <i class="fas fa-robot text-xl"></i>
+                    <span class="text-xs font-medium">Assistant</span>
+                </a>
+                <a href="doctors.html" class="nav-item flex flex-col items-center space-y-1 text-gray-600">
+                    <i class="fas fa-user-md text-xl"></i>
+                    <span class="text-xs font-medium">Doctors</span>
+                </a>
+                <a href="profile.html" class="nav-item flex flex-col items-center space-y-1 text-gray-600">
+                    <i class="fas fa-user text-xl"></i>
+                    <span class="text-xs font-medium">Profile</span>
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Scripts -->
+    <script src="main.js"></script>
+    <script>
+        // Page-specific initialization
+        document.addEventListener('DOMContentLoaded', function() {
+            // Update countdown timers every minute
+            setInterval(updateCountdowns, 60000);
+            
+            // Add floating animation to some elements
+            document.querySelectorAll('.vital-card').forEach((card, index) => {
+                card.style.animationDelay = `${index * 0.2}s`;
+                card.classList.add('floating-animation');
+            });
+        });
+
+        // Appointment functions
+        function viewAppointment(id) {
+            notificationSystem.show('Opening appointment details...', 'info');
+            // In a real app, this would navigate to appointment details
+        }
+
+        function addToCalendar(id) {
+            notificationSystem.show('Adding to calendar...', 'info');
+            // Simulate calendar integration
+            setTimeout(() => {
+                notificationSystem.show('Appointment added to calendar!', 'success');
+            }, 1500);
+        }
+
+        // Notification System Functions
+        function loadNotifications() {
+            const notifications = notificationManager.getNotifications().slice(0, 5); // Show latest 5
+            const container = document.getElementById('notification-list');
+            
+            if (notifications.length === 0) {
+                container.innerHTML = `
+                    <div class="text-center py-8 text-gray-500">
+                        <i class="fas fa-bell-slash text-3xl mb-3"></i>
+                        <p>No notifications yet</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            container.innerHTML = notifications.map(notification => `
+                <div class="notification-item flex items-start space-x-3 p-3 rounded-lg hover:bg-gray-50 transition-colors ${notification.read ? 'opacity-60' : ''}" 
+                     onclick="handleNotificationClick('${notification.id}')">
+                    <div class="w-8 h-8 rounded-full flex items-center justify-center ${getNotificationIconColor(notification.type)}">
+                        <i class="fas ${getNotificationIcon(notification.type)} text-sm"></i>
+                    </div>
+                    <div class="flex-1 min-w-0">
+                        <div class="flex justify-between items-start">
+                            <p class="font-medium text-gray-900 text-sm">${notification.title}</p>
+                            <span class="text-xs text-gray-500">${formatNotificationTime(notification.timestamp)}</span>
+                        </div>
+                        <p class="text-sm text-gray-600 mt-1">${notification.message}</p>
+                        ${notification.actions ? `
+                            <div class="flex space-x-2 mt-2">
+                                ${notification.actions.map(action => `
+                                    <button onclick="event.stopPropagation(); handleNotificationAction('${notification.id}', '${action}')" 
+                                            class="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded hover:bg-blue-200 transition-colors">
+                                        ${action}
+                                    </button>
+                                `).join('')}
+                            </div>
+                        ` : ''}
+                    </div>
+                    ${!notification.read ? '<div class="w-2 h-2 bg-blue-500 rounded-full mt-2"></div>' : ''}
+                </div>
+            `).join('');
+        }
+
+        function getNotificationIcon(type) {
+            const icons = {
+                medication_reminder: 'fa-pills',
+                appointment: 'fa-calendar-check',
+                vitals_check: 'fa-heartbeat',
+                delivery_confirmed: 'fa-truck',
+                delivery_arriving: 'fa-shipping-fast',
+                delivery_completed: 'fa-check-circle',
+                weekly_report: 'fa-chart-line',
+                emergency: 'fa-exclamation-triangle',
+                health_alert: 'fa-exclamation-circle',
+                system: 'fa-cog'
+            };
+            return icons[type] || 'fa-bell';
+        }
+
+        function getNotificationIconColor(type) {
+            const colors = {
+                medication_reminder: 'bg-blue-100 text-blue-600',
+                appointment: 'bg-green-100 text-green-600',
+                vitals_check: 'bg-red-100 text-red-600',
+                delivery_confirmed: 'bg-purple-100 text-purple-600',
+                delivery_arriving: 'bg-orange-100 text-orange-600',
+                delivery_completed: 'bg-green-100 text-green-600',
+                weekly_report: 'bg-indigo-100 text-indigo-600',
+                emergency: 'bg-red-100 text-red-600',
+                health_alert: 'bg-yellow-100 text-yellow-600',
+                system: 'bg-gray-100 text-gray-600'
+            };
+            return colors[type] || 'bg-gray-100 text-gray-600';
+        }
+
+        function formatNotificationTime(timestamp) {
+            const now = new Date();
+            const notificationTime = new Date(timestamp);
+            const diffInMinutes = Math.floor((now - notificationTime) / (1000 * 60));
+            
+            if (diffInMinutes < 1) return 'Just now';
+            if (diffInMinutes < 60) return `${diffInMinutes}m ago`;
+            if (diffInMinutes < 1440) return `${Math.floor(diffInMinutes / 60)}h ago`;
+            return notificationTime.toLocaleDateString();
+        }
+
+        function handleNotificationClick(notificationId) {
+            notificationManager.markAsRead(notificationId);
+            loadNotifications();
+            
+            // Handle specific notification actions
+            const notification = notificationManager.getNotifications().find(n => n.id === notificationId);
+            if (notification && notification.action) {
+                switch(notification.action) {
+                    case 'view_appointment':
+                        window.location.href = 'doctors.html';
+                        break;
+                    case 'check_vitals':
+                        window.location.href = 'health.html';
+                        break;
+                    case 'view_delivery':
+                        window.location.href = 'delivery.html';
+                        break;
+                    default:
+                        notificationSystem.show(`Action: ${notification.action}`, 'info');
+                }
+            }
+        }
+
+        function handleNotificationAction(notificationId, action) {
+            notificationManager.markAsRead(notificationId);
+            loadNotifications();
+            
+            switch(action) {
+                case 'Taken':
+                    notificationSystem.show('Medication marked as taken', 'success');
+                    break;
+                case 'Snooze 15min':
+                    notificationSystem.show('Reminder snoozed for 15 minutes', 'info');
+                    // Schedule new notification
+                    setTimeout(() => {
+                        notificationManager.addNotification('medication_reminder', 'Medication Reminder', 'Time to take your medication', { action: 'view_medications' });
+                    }, 15 * 60 * 1000);
+                    break;
+                case 'Dismiss':
+                    notificationSystem.show('Reminder dismissed', 'info');
+                    break;
+                case 'Check Vitals':
+                    window.location.href = 'health.html';
+                    break;
+                default:
+                    notificationSystem.show(`Action completed: ${action}`, 'success');
+            }
+        }
+
+        function markAllNotificationsRead() {
+            notificationManager.markAllAsRead();
+            loadNotifications();
+            notificationSystem.show('All notifications marked as read', 'success');
+        }
+
+        function openNotificationSettings() {
+            notificationSystem.show('Opening notification settings...', 'info');
+            
+            // Create settings modal
+            const modal = document.createElement('div');
+            modal.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50';
+            modal.innerHTML = `
+                <div class="bg-white rounded-xl p-6 max-w-md w-full mx-4">
+                    <h3 class="text-xl font-semibold text-gray-900 mb-4">Notification Settings</h3>
+                    <div class="space-y-4">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <div class="font-medium text-gray-900">Medication Reminders</div>
+                                <div class="text-sm text-gray-600">Daily medication alerts</div>
+                            </div>
+                            <label class="relative inline-flex items-center cursor-pointer">
+                                <input type="checkbox" class="sr-only peer" checked>
+                                <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+                            </label>
+                        </div>
+                        
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <div class="font-medium text-gray-900">Appointment Reminders</div>
+                                <div class="text-sm text-gray-600">Upcoming appointment alerts</div>
+                            </div>
+                            <label class="relative inline-flex items-center cursor-pointer">
+                                <input type="checkbox" class="sr-only peer" checked>
+                                <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+                            </label>
+                        </div>
+                        
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <div class="font-medium text-gray-900">Health Alerts</div>
+                                <div class="text-sm text-gray-600">Critical health notifications</div>
+                            </div>
+                            <label class="relative inline-flex items-center cursor-pointer">
+                                <input type="checkbox" class="sr-only peer" checked>
+                                <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+                            </label>
+                        </div>
+                        
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <div class="font-medium text-gray-900">Delivery Updates</div>
+                                <div class="text-sm text-gray-600">Order and delivery notifications</div>
+                            </div>
+                            <label class="relative inline-flex items-center cursor-pointer">
+                                <input type="checkbox" class="sr-only peer" checked>
+                                <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+                            </label>
+                        </div>
+                        
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <div class="font-medium text-gray-900">Weekly Reports</div>
+                                <div class="text-sm text-gray-600">Weekly health summaries</div>
+                            </div>
+                            <label class="relative inline-flex items-center cursor-pointer">
+                                <input type="checkbox" class="sr-only peer" checked>
+                                <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+                            </label>
+                        </div>
+                    </div>
+                    <div class="flex space-x-4 mt-6">
+                        <button onclick="this.closest('.fixed').remove()" class="flex-1 bg-gray-300 text-gray-700 py-2 px-4 rounded-lg hover:bg-gray-400 transition-colors">
+                            Cancel
+                        </button>
+                        <button onclick="saveNotificationSettings(); this.closest('.fixed').remove()" class="flex-1 bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 transition-colors">
+                            Save Settings
+                        </button>
+                    </div>
+                </div>
+            `;
+            document.body.appendChild(modal);
+            
+            // Animate in
+            anime({
+                targets: modal.querySelector('.bg-white'),
+                scale: [0.8, 1],
+                opacity: [0, 1],
+                duration: 300,
+                easing: 'easeOutQuart'
+            });
+        }
+
+        function saveNotificationSettings() {
+            notificationSystem.show('Notification settings saved successfully!', 'success');
+            // In a real app, this would save to backend
+        }
+
+        function viewAllNotifications() {
+            window.location.href = 'profile.html#notifications';
+        }
+
+        // Initialize notifications on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            loadNotifications();
+            
+            // Request notification permission if not already granted
+            if (notificationManager.permission === 'default') {
+                notificationManager.requestPermission().then(granted => {
+                    if (granted) {
+                        notificationSystem.show('Notifications enabled successfully!', 'success');
+                    }
+                });
+            }
+            
+            // Schedule sample notifications for demonstration
+            setTimeout(() => {
+                scheduleDemoNotifications();
+            }, 3000);
+        });
+
+        function scheduleDemoNotifications() {
+            // Add some sample notifications
+            const sampleNotifications = [
+                {
+                    type: 'medication_reminder',
+                    title: 'Morning Medication Reminder',
+                    message: 'Time to take your Lisinopril 10mg',
+                    action: 'view_medications'
+                },
+                {
+                    type: 'appointment',
+                    title: 'Upcoming Appointment',
+                    message: 'Dr. Sarah Williams - Tomorrow at 10:30 AM',
+                    action: 'view_appointment'
+                },
+                {
+                    type: 'delivery_confirmed',
+                    title: 'Order Confirmed',
+                    message: 'Your medicine order has been confirmed and will be delivered soon',
+                    action: 'view_delivery'
+                }
+            ];
+            
+            sampleNotifications.forEach((notification, index) => {
+                setTimeout(() => {
+                    notificationManager.addNotification(
+                        notification.type,
+                        notification.title,
+                        notification.message,
+                        { action: notification.action }
+                    );
+                    loadNotifications();
+                }, index * 2000);
+            });
+        }
+    </script>
+</body>
+</html>

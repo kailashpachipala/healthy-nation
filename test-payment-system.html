@@ -1,0 +1,687 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Payment System Test - Healthy Nation</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+        }
+        
+        .test-card {
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+            transition: all 0.3s ease;
+            border: 2px solid transparent;
+        }
+        
+        .test-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+            border-color: #2563eb;
+        }
+        
+        .test-result {
+            padding: 1rem;
+            border-radius: 8px;
+            margin: 0.5rem 0;
+        }
+        
+        .test-pass {
+            background: #ecfdf5;
+            color: #059669;
+            border: 1px solid #a7f3d0;
+        }
+        
+        .test-fail {
+            background: #fef2f2;
+            color: #dc2626;
+            border: 1px solid #fca5a5;
+        }
+        
+        .test-warning {
+            background: #fffbeb;
+            color: #d97706;
+            border: 1px solid #fed7aa;
+        }
+        
+        .payment-method-test {
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .payment-method-test:hover {
+            transform: scale(1.02);
+        }
+        
+        .payment-method-test.selected {
+            border-color: #2563eb;
+            background: #eff6ff;
+        }
+    </style>
+</head>
+<body class="min-h-screen p-6">
+    <div class="max-w-6xl mx-auto">
+        <!-- Header -->
+        <div class="text-center mb-8">
+            <h1 class="text-4xl font-bold text-gray-900 mb-2">Payment System Test Suite</h1>
+            <p class="text-lg text-gray-600">Comprehensive testing of all payment methods and functionality</p>
+        </div>
+
+        <!-- Test Results Summary -->
+        <div class="test-card p-6 mb-8">
+            <h2 class="text-2xl font-semibold text-gray-900 mb-4">Test Results Summary</h2>
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                <div class="text-center p-4 bg-green-50 rounded-lg">
+                    <div class="text-3xl font-bold text-green-600" id="tests-passed">0</div>
+                    <div class="text-sm text-green-700">Tests Passed</div>
+                </div>
+                <div class="text-center p-4 bg-red-50 rounded-lg">
+                    <div class="text-3xl font-bold text-red-600" id="tests-failed">0</div>
+                    <div class="text-sm text-red-700">Tests Failed</div>
+                </div>
+                <div class="text-center p-4 bg-yellow-50 rounded-lg">
+                    <div class="text-3xl font-bold text-yellow-600" id="tests-warning">0</div>
+                    <div class="text-sm text-yellow-700">Tests with Warnings</div>
+                </div>
+                <div class="text-center p-4 bg-blue-50 rounded-lg">
+                    <div class="text-3xl font-bold text-blue-600" id="tests-total">0</div>
+                    <div class="text-sm text-blue-700">Total Tests</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Payment Method Tests -->
+        <div class="test-card p-6 mb-8">
+            <h2 class="text-2xl font-semibold text-gray-900 mb-6">Payment Method Tests</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <!-- UPI Payment Test -->
+                <div class="payment-method-test p-6 border-2 border-gray-200 rounded-lg" onclick="testPaymentMethod('upi')">
+                    <div class="flex items-center space-x-3 mb-4">
+                        <div class="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center">
+                            <i class="fas fa-mobile-alt text-blue-600 text-xl"></i>
+                        </div>
+                        <div>
+                            <h3 class="font-semibold text-gray-900">UPI Payment</h3>
+                            <p class="text-sm text-gray-600">Test UPI payment processing</p>
+                        </div>
+                    </div>
+                    <div class="space-y-2">
+                        <input type="text" id="upi-test-input" class="w-full px-3 py-2 border border-gray-300 rounded-lg" placeholder="test@upi">
+                        <button class="w-full bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 transition-colors">
+                            Test UPI Payment
+                        </button>
+                    </div>
+                    <div id="upi-test-results" class="mt-4"></div>
+                </div>
+
+                <!-- Card Payment Test -->
+                <div class="payment-method-test p-6 border-2 border-gray-200 rounded-lg" onclick="testPaymentMethod('card')">
+                    <div class="flex items-center space-x-3 mb-4">
+                        <div class="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center">
+                            <i class="fas fa-credit-card text-green-600 text-xl"></i>
+                        </div>
+                        <div>
+                            <h3 class="font-semibold text-gray-900">Card Payment</h3>
+                            <p class="text-sm text-gray-600">Test credit/debit card processing</p>
+                        </div>
+                    </div>
+                    <div class="space-y-2">
+                        <input type="text" id="card-test-input" class="w-full px-3 py-2 border border-gray-300 rounded-lg" placeholder="1234 5678 9012 3456">
+                        <div class="grid grid-cols-2 gap-2">
+                            <input type="text" id="expiry-test-input" class="px-3 py-2 border border-gray-300 rounded-lg" placeholder="MM/YY">
+                            <input type="text" id="cvv-test-input" class="px-3 py-2 border border-gray-300 rounded-lg" placeholder="CVV">
+                        </div>
+                        <button class="w-full bg-green-600 text-white py-2 px-4 rounded-lg hover:bg-green-700 transition-colors">
+                            Test Card Payment
+                        </button>
+                    </div>
+                    <div id="card-test-results" class="mt-4"></div>
+                </div>
+
+                <!-- Wallet Payment Test -->
+                <div class="payment-method-test p-6 border-2 border-gray-200 rounded-lg" onclick="testPaymentMethod('wallet')">
+                    <div class="flex items-center space-x-3 mb-4">
+                        <div class="w-12 h-12 bg-purple-100 rounded-full flex items-center justify-center">
+                            <i class="fas fa-wallet text-purple-600 text-xl"></i>
+                        </div>
+                        <div>
+                            <h3 class="font-semibold text-gray-900">Wallet Payment</h3>
+                            <p class="text-sm text-gray-600">Test wallet balance and payment</p>
+                        </div>
+                    </div>
+                    <div class="space-y-2">
+                        <div class="bg-purple-50 p-3 rounded-lg">
+                            <p class="text-sm text-purple-800">Available Balance: <span id="wallet-balance-test">$50.00</span></p>
+                        </div>
+                        <input type="number" id="wallet-amount-test" class="w-full px-3 py-2 border border-gray-300 rounded-lg" placeholder="Amount to test" value="25">
+                        <button class="w-full bg-purple-600 text-white py-2 px-4 rounded-lg hover:bg-purple-700 transition-colors">
+                            Test Wallet Payment
+                        </button>
+                    </div>
+                    <div id="wallet-test-results" class="mt-4"></div>
+                </div>
+
+                <!-- Insurance Payment Test -->
+                <div class="payment-method-test p-6 border-2 border-gray-200 rounded-lg" onclick="testPaymentMethod('insurance')">
+                    <div class="flex items-center space-x-3 mb-4">
+                        <div class="w-12 h-12 bg-orange-100 rounded-full flex items-center justify-center">
+                            <i class="fas fa-shield-alt text-orange-600 text-xl"></i>
+                        </div>
+                        <div>
+                            <h3 class="font-semibold text-gray-900">Insurance Payment</h3>
+                            <p class="text-sm text-gray-600">Test insurance discount processing</p>
+                        </div>
+                    </div>
+                    <div class="space-y-2">
+                        <select id="insurance-provider-test" class="w-full px-3 py-2 border border-gray-300 rounded-lg">
+                            <option>Blue Cross Blue Shield</option>
+                            <option>Aetna</option>
+                            <option>Cigna</option>
+                        </select>
+                        <input type="text" id="insurance-id-test" class="w-full px-3 py-2 border border-gray-300 rounded-lg" placeholder="Insurance ID" value="INS123456789">
+                        <button class="w-full bg-orange-600 text-white py-2 px-4 rounded-lg hover:bg-orange-700 transition-colors">
+                            Test Insurance Payment
+                        </button>
+                    </div>
+                    <div id="insurance-test-results" class="mt-4"></div>
+                </div>
+
+                <!-- Health Scheme Test -->
+                <div class="payment-method-test p-6 border-2 border-gray-200 rounded-lg" onclick="testPaymentMethod('health-scheme')">
+                    <div class="flex items-center space-x-3 mb-4">
+                        <div class="w-12 h-12 bg-teal-100 rounded-full flex items-center justify-center">
+                            <i class="fas fa-heart text-teal-600 text-xl"></i>
+                        </div>
+                        <div>
+                            <h3 class="font-semibold text-gray-900">Health Scheme</h3>
+                            <p class="text-sm text-gray-600">Test government scheme benefits</p>
+                        </div>
+                    </div>
+                    <div class="space-y-2">
+                        <select id="scheme-test-select" class="w-full px-3 py-2 border border-gray-300 rounded-lg">
+                            <option>Ayushman Bharat</option>
+                            <option>ESIC</option>
+                            <option>CGHS</option>
+                        </select>
+                        <input type="text" id="scheme-id-test" class="w-full px-3 py-2 border border-gray-300 rounded-lg" placeholder="Scheme ID" value="AB-1234-5678-9012">
+                        <button class="w-full bg-teal-600 text-white py-2 px-4 rounded-lg hover:bg-teal-700 transition-colors">
+                            Test Health Scheme
+                        </button>
+                    </div>
+                    <div id="scheme-test-results" class="mt-4"></div>
+                </div>
+
+                <!-- Cash on Delivery Test -->
+                <div class="payment-method-test p-6 border-2 border-gray-200 rounded-lg" onclick="testPaymentMethod('cod')">
+                    <div class="flex items-center space-x-3 mb-4">
+                        <div class="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center">
+                            <i class="fas fa-hand-holding-usd text-red-600 text-xl"></i>
+                        </div>
+                        <div>
+                            <h3 class="font-semibold text-gray-900">Cash on Delivery</h3>
+                            <p class="text-sm text-gray-600">Test COD payment processing</p>
+                        </div>
+                    </div>
+                    <div class="space-y-2">
+                        <div class="bg-red-50 p-3 rounded-lg">
+                            <p class="text-sm text-red-800">Additional $2 charge applies</p>
+                        </div>
+                        <input type="number" id="cod-amount-test" class="w-full px-3 py-2 border border-gray-300 rounded-lg" placeholder="Order amount" value="30">
+                        <button class="w-full bg-red-600 text-white py-2 px-4 rounded-lg hover:bg-red-700 transition-colors">
+                            Test COD Payment
+                        </button>
+                    </div>
+                    <div id="cod-test-results" class="mt-4"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Integration Tests -->
+        <div class="test-card p-6 mb-8">
+            <h2 class="text-2xl font-semibold text-gray-900 mb-6">Integration Tests</h2>
+            <div class="space-y-4">
+                <div class="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+                    <div>
+                        <h4 class="font-semibold text-gray-900">End-to-End Payment Flow</h4>
+                        <p class="text-sm text-gray-600">Test complete payment flow from cart to success</p>
+                    </div>
+                    <button onclick="testEndToEndFlow()" class="bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 transition-colors">
+                        Run Test
+                    </button>
+                </div>
+
+                <div class="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+                    <div>
+                        <h4 class="font-semibold text-gray-900">Receipt Generation</h4>
+                        <p class="text-sm text-gray-600">Test receipt generation and download functionality</p>
+                    </div>
+                    <button onclick="testReceiptGeneration()" class="bg-green-600 text-white py-2 px-4 rounded-lg hover:bg-green-700 transition-colors">
+                        Run Test
+                    </button>
+                </div>
+
+                <div class="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+                    <div>
+                        <h4 class="font-semibold text-gray-900">Error Handling</h4>
+                        <p class="text-sm text-gray-600">Test payment failure scenarios and error messages</p>
+                    </div>
+                    <button onclick="testErrorHandling()" class="bg-red-600 text-white py-2 px-4 rounded-lg hover:bg-red-700 transition-colors">
+                        Run Test
+                    </button>
+                </div>
+
+                <div class="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+                    <div>
+                        <h4 class="font-semibold text-gray-900">Transaction History</h4>
+                        <p class="text-sm text-gray-600">Test transaction logging and history retrieval</p>
+                    </div>
+                    <button onclick="testTransactionHistory()" class="bg-purple-600 text-white py-2 px-4 rounded-lg hover:bg-purple-700 transition-colors">
+                        Run Test
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Performance Tests -->
+        <div class="test-card p-6 mb-8">
+            <h2 class="text-2xl font-semibold text-gray-900 mb-6">Performance Tests</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="p-4 bg-gray-50 rounded-lg">
+                    <h4 class="font-semibold text-gray-900 mb-3">Payment Processing Speed</h4>
+                    <button onclick="testPaymentSpeed()" class="bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 transition-colors mb-3">
+                        Test Speed
+                    </button>
+                    <div id="speed-test-results"></div>
+                </div>
+
+                <div class="p-4 bg-gray-50 rounded-lg">
+                    <h4 class="font-semibold text-gray-900 mb-3">Memory Usage</h4>
+                    <button onclick="testMemoryUsage()" class="bg-green-600 text-white py-2 px-4 rounded-lg hover:bg-green-700 transition-colors mb-3">
+                        Test Memory
+                    </button>
+                    <div id="memory-test-results"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Debug Console -->
+        <div class="test-card p-6">
+            <h2 class="text-2xl font-semibold text-gray-900 mb-4">Debug Console</h2>
+            <div class="bg-gray-900 text-green-400 p-4 rounded-lg font-mono text-sm h-64 overflow-y-auto" id="debug-console">
+                <div class="text-gray-400">// Payment System Test Console</div>
+                <div class="text-gray-400">// Ready for testing...</div>
+            </div>
+            <div class="mt-4 flex space-x-4">
+                <button onclick="clearConsole()" class="bg-gray-600 text-white py-2 px-4 rounded-lg hover:bg-gray-700 transition-colors">
+                    Clear Console
+                </button>
+                <button onclick="runAllTests()" class="bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 transition-colors">
+                    Run All Tests
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script src="main.js"></script>
+    <script>
+        let testResults = {
+            passed: 0,
+            failed: 0,
+            warnings: 0,
+            total: 0
+        };
+
+        function log(message, type = 'info') {
+            const console = document.getElementById('debug-console');
+            const timestamp = new Date().toLocaleTimeString();
+            const color = type === 'success' ? 'text-green-400' : type === 'error' ? 'text-red-400' : type === 'warning' ? 'text-yellow-400' : 'text-blue-400';
+            console.innerHTML += `<div class="${color}">[${timestamp}] ${message}</div>`;
+            console.scrollTop = console.scrollHeight;
+        }
+
+        function updateTestSummary() {
+            document.getElementById('tests-passed').textContent = testResults.passed;
+            document.getElementById('tests-failed').textContent = testResults.failed;
+            document.getElementById('tests-warning').textContent = testResults.warnings;
+            document.getElementById('tests-total').textContent = testResults.total;
+        }
+
+        function addTestResult(elementId, message, type) {
+            const element = document.getElementById(elementId);
+            const resultDiv = document.createElement('div');
+            resultDiv.className = `test-result test-${type}`;
+            resultDiv.innerHTML = `<i class="fas fa-${type === 'pass' ? 'check' : type === 'fail' ? 'times' : 'exclamation-triangle'} mr-2"></i>${message}`;
+            element.appendChild(resultDiv);
+
+            testResults.total++;
+            if (type === 'pass') testResults.passed++;
+            else if (type === 'fail') testResults.failed++;
+            else if (type === 'warning') testResults.warnings++;
+
+            updateTestSummary();
+        }
+
+        function testPaymentMethod(method) {
+            log(`Testing ${method} payment method...`);
+            
+            switch(method) {
+                case 'upi':
+                    testUPIPayment();
+                    break;
+                case 'card':
+                    testCardPayment();
+                    break;
+                case 'wallet':
+                    testWalletPayment();
+                    break;
+                case 'insurance':
+                    testInsurancePayment();
+                    break;
+                case 'health-scheme':
+                    testHealthSchemePayment();
+                    break;
+                case 'cod':
+                    testCODPayment();
+                    break;
+            }
+        }
+
+        function testUPIPayment() {
+            const upiId = document.getElementById('upi-test-input').value || 'test@upi';
+            const validation = paymentSystem.validatePaymentDetails('upi', { upiId });
+            
+            if (validation.valid) {
+                paymentSystem.processPayment(25.99, 'upi', { upiId, items: ['Lisinopril 10mg'] })
+                    .then(transaction => {
+                        addTestResult('upi-test-results', `✅ UPI Payment Successful - Transaction ID: ${transaction.id}`, 'pass');
+                        log(`UPI payment successful: ${transaction.id}`, 'success');
+                    })
+                    .catch(error => {
+                        addTestResult('upi-test-results', `❌ UPI Payment Failed: ${error.message}`, 'fail');
+                        log(`UPI payment failed: ${error.message}`, 'error');
+                    });
+            } else {
+                addTestResult('upi-test-results', `⚠️ UPI Validation Failed: ${validation.error}`, 'warning');
+                log(`UPI validation failed: ${validation.error}`, 'warning');
+            }
+        }
+
+        function testCardPayment() {
+            const cardNumber = document.getElementById('card-test-input').value || '1234567890123456';
+            const expiryDate = document.getElementById('expiry-test-input').value || '12/25';
+            const cvv = document.getElementById('cvv-test-input').value || '123';
+            
+            const validation = paymentSystem.validatePaymentDetails('card', { cardNumber, expiryDate, cvv });
+            
+            if (validation.valid) {
+                paymentSystem.processPayment(35.99, 'card', { cardNumber, expiryDate, cvv, items: ['Metformin 500mg', 'Vitamin D3'] })
+                    .then(transaction => {
+                        addTestResult('card-test-results', `✅ Card Payment Successful - Transaction ID: ${transaction.id}`, 'pass');
+                        log(`Card payment successful: ${transaction.id}`, 'success');
+                    })
+                    .catch(error => {
+                        addTestResult('card-test-results', `❌ Card Payment Failed: ${error.message}`, 'fail');
+                        log(`Card payment failed: ${error.message}`, 'error');
+                    });
+            } else {
+                addTestResult('card-test-results', `⚠️ Card Validation Failed: ${validation.error}`, 'warning');
+                log(`Card validation failed: ${validation.error}`, 'warning');
+            }
+        }
+
+        function testWalletPayment() {
+            const amount = parseFloat(document.getElementById('wallet-amount-test').value) || 25;
+            const validation = paymentSystem.validatePaymentDetails('wallet', { amount });
+            
+            if (validation.valid) {
+                paymentSystem.processPayment(amount, 'wallet', { amount, items: ['Ibuprofen 200mg'] })
+                    .then(transaction => {
+                        addTestResult('wallet-test-results', `✅ Wallet Payment Successful - Transaction ID: ${transaction.id}`, 'pass');
+                        log(`Wallet payment successful: ${transaction.id}`, 'success');
+                        // Update wallet balance display
+                        const newBalance = paymentSystem.getWalletBalance();
+                        document.getElementById('wallet-balance-test').textContent = `$${newBalance.toFixed(2)}`;
+                    })
+                    .catch(error => {
+                        addTestResult('wallet-test-results', `❌ Wallet Payment Failed: ${error.message}`, 'fail');
+                        log(`Wallet payment failed: ${error.message}`, 'error');
+                    });
+            } else {
+                addTestResult('wallet-test-results', `⚠️ Wallet Validation Failed: ${validation.error}`, 'warning');
+                log(`Wallet validation failed: ${validation.error}`, 'warning');
+            }
+        }
+
+        function testInsurancePayment() {
+            const insuranceId = document.getElementById('insurance-id-test').value || 'INS123456789';
+            const validation = paymentSystem.validatePaymentDetails('insurance', { insuranceId });
+            
+            if (validation.valid) {
+                paymentSystem.processPayment(45.99, 'insurance', { insuranceId, items: ['Insulin Pen'] })
+                    .then(transaction => {
+                        addTestResult('insurance-test-results', `✅ Insurance Payment Successful - Transaction ID: ${transaction.id}`, 'pass');
+                        log(`Insurance payment successful: ${transaction.id}`, 'success');
+                    })
+                    .catch(error => {
+                        addTestResult('insurance-test-results', `❌ Insurance Payment Failed: ${error.message}`, 'fail');
+                        log(`Insurance payment failed: ${error.message}`, 'error');
+                    });
+            } else {
+                addTestResult('insurance-test-results', `⚠️ Insurance Validation Failed: ${validation.error}`, 'warning');
+                log(`Insurance validation failed: ${validation.error}`, 'warning');
+            }
+        }
+
+        function testHealthSchemePayment() {
+            const schemeId = document.getElementById('scheme-id-test').value || 'AB-1234-5678-9012';
+            const validation = paymentSystem.validatePaymentDetails('health-scheme', { schemeId });
+            
+            if (validation.valid) {
+                paymentSystem.processPayment(15.99, 'health-scheme', { schemeId, items: ['Metformin 500mg'] })
+                    .then(transaction => {
+                        addTestResult('scheme-test-results', `✅ Health Scheme Payment Successful - Transaction ID: ${transaction.id}`, 'pass');
+                        log(`Health scheme payment successful: ${transaction.id}`, 'success');
+                    })
+                    .catch(error => {
+                        addTestResult('scheme-test-results', `❌ Health Scheme Payment Failed: ${error.message}`, 'fail');
+                        log(`Health scheme payment failed: ${error.message}`, 'error');
+                    });
+            } else {
+                addTestResult('scheme-test-results', `⚠️ Health Scheme Validation Failed: ${validation.error}`, 'warning');
+                log(`Health scheme validation failed: ${validation.error}`, 'warning');
+            }
+        }
+
+        function testCODPayment() {
+            const amount = parseFloat(document.getElementById('cod-amount-test').value) || 30;
+            paymentSystem.processPayment(amount, 'cod', { amount, items: ['Atorvastatin 20mg'] })
+                .then(transaction => {
+                    addTestResult('cod-test-results', `✅ COD Payment Successful - Transaction ID: ${transaction.id}`, 'pass');
+                    log(`COD payment successful: ${transaction.id}`, 'success');
+                })
+                .catch(error => {
+                    addTestResult('cod-test-results', `❌ COD Payment Failed: ${error.message}`, 'fail');
+                    log(`COD payment failed: ${error.message}`, 'error');
+                });
+        }
+
+        function testEndToEndFlow() {
+            log('Testing end-to-end payment flow...');
+            
+            // Simulate adding items to cart
+            const cartItems = [
+                { id: 'lisinopril', name: 'Lisinopril 10mg', price: 12.99, quantity: 1 },
+                { id: 'vitamin-d', name: 'Vitamin D3 2000IU', price: 8.99, quantity: 1 }
+            ];
+            
+            const subtotal = cartItems.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+            const deliveryFee = subtotal > 25 ? 0 : 4.99;
+            const total = subtotal + deliveryFee;
+            
+            log(`Cart total: $${total.toFixed(2)}`);
+            
+            // Test payment processing
+            paymentSystem.processPayment(total, 'upi', { upiId: 'test@endtoend', items: cartItems })
+                .then(transaction => {
+                    log(`✅ End-to-end flow successful: ${transaction.id}`, 'success');
+                    addTestResult('debug-console', `✅ End-to-End Flow Successful - Transaction ID: ${transaction.id}`, 'pass');
+                })
+                .catch(error => {
+                    log(`❌ End-to-end flow failed: ${error.message}`, 'error');
+                    addTestResult('debug-console', `❌ End-to-End Flow Failed: ${error.message}`, 'fail');
+                });
+        }
+
+        function testReceiptGeneration() {
+            log('Testing receipt generation...');
+            
+            const transactionId = 'TXN_' + Date.now();
+            const receipt = paymentSystem.generateReceipt(transactionId);
+            
+            if (receipt) {
+                log(`✅ Receipt generated successfully for ${receipt.transactionId}`, 'success');
+                addTestResult('debug-console', `✅ Receipt Generation Successful - Transaction: ${receipt.transactionId}`, 'pass');
+            } else {
+                log('❌ Receipt generation failed', 'error');
+                addTestResult('debug-console', '❌ Receipt Generation Failed', 'fail');
+            }
+        }
+
+        function testErrorHandling() {
+            log('Testing error handling scenarios...');
+            
+            // Test invalid UPI
+            const upiValidation = paymentSystem.validatePaymentDetails('upi', { upiId: 'invalid-upi' });
+            if (!upiValidation.valid) {
+                log(`✅ Invalid UPI handled correctly: ${upiValidation.error}`, 'success');
+            }
+            
+            // Test insufficient wallet balance
+            const walletValidation = paymentSystem.validatePaymentDetails('wallet', { amount: 1000 });
+            if (!walletValidation.valid) {
+                log(`✅ Insufficient wallet balance handled correctly: ${walletValidation.error}`, 'success');
+            }
+            
+            // Test payment failure simulation
+            paymentSystem.processPayment(25, 'upi', { upiId: 'fail@upi' })
+                .then(() => {
+                    log('❌ Payment should have failed but succeeded', 'error');
+                })
+                .catch(error => {
+                    log(`✅ Payment failure handled correctly: ${error.message}`, 'success');
+                });
+        }
+
+        function testTransactionHistory() {
+            log('Testing transaction history...');
+            
+            const history = paymentSystem.getTransactionHistory(5);
+            log(`✅ Retrieved ${history.length} transactions from history`, 'success');
+            
+            const exportData = paymentSystem.exportTransactionData('json');
+            if (exportData) {
+                log('✅ Transaction data export successful', 'success');
+                addTestResult('debug-console', `✅ Transaction History Test Successful - ${history.length} transactions exported`, 'pass');
+            }
+        }
+
+        function testPaymentSpeed() {
+            log('Testing payment processing speed...');
+            
+            const startTime = performance.now();
+            paymentSystem.processPayment(25, 'upi', { upiId: 'speed@test' })
+                .then(transaction => {
+                    const endTime = performance.now();
+                    const duration = endTime - startTime;
+                    log(`✅ Payment processed in ${duration.toFixed(2)}ms`, 'success');
+                    document.getElementById('speed-test-results').innerHTML = `
+                        <div class="test-result test-pass">
+                            <i class="fas fa-check mr-2"></i>Payment processed in ${duration.toFixed(2)}ms
+                        </div>
+                    `;
+                })
+                .catch(error => {
+                    log(`❌ Payment speed test failed: ${error.message}`, 'error');
+                });
+        }
+
+        function testMemoryUsage() {
+            log('Testing memory usage...');
+            
+            if ('memory' in performance) {
+                const memory = performance.memory;
+                const usedMB = (memory.usedJSHeapSize / 1048576).toFixed(2);
+                const totalMB = (memory.totalJSHeapSize / 1048576).toFixed(2);
+                
+                log(`Memory Usage: ${usedMB}MB / ${totalMB}MB`, 'info');
+                document.getElementById('memory-test-results').innerHTML = `
+                    <div class="test-result test-pass">
+                        <i class="fas fa-check mr-2"></i>Memory: ${usedMB}MB used
+                    </div>
+                `;
+            } else {
+                log('Memory API not available in this browser', 'warning');
+                document.getElementById('memory-test-results').innerHTML = `
+                    <div class="test-result test-warning">
+                        <i class="fas fa-exclamation-triangle mr-2"></i>Memory API not available
+                    </div>
+                `;
+            }
+        }
+
+        function clearConsole() {
+            document.getElementById('debug-console').innerHTML = '<div class="text-gray-400">// Payment System Test Console</div><div class="text-gray-400">// Ready for testing...</div>';
+        }
+
+        function runAllTests() {
+            log('Running all payment system tests...');
+            
+            // Reset test results
+            testResults = { passed: 0, failed: 0, warnings: 0, total: 0 };
+            updateTestSummary();
+            
+            // Clear previous results
+            document.querySelectorAll('[id$="-test-results"]').forEach(el => el.innerHTML = '');
+            
+            // Run all payment method tests
+            setTimeout(() => testPaymentMethod('upi'), 1000);
+            setTimeout(() => testPaymentMethod('card'), 2000);
+            setTimeout(() => testPaymentMethod('wallet'), 3000);
+            setTimeout(() => testPaymentMethod('insurance'), 4000);
+            setTimeout(() => testPaymentMethod('health-scheme'), 5000);
+            setTimeout(() => testPaymentMethod('cod'), 6000);
+            
+            // Run integration tests
+            setTimeout(() => testEndToEndFlow(), 7000);
+            setTimeout(() => testReceiptGeneration(), 8000);
+            setTimeout(() => testErrorHandling(), 9000);
+            setTimeout(() => testTransactionHistory(), 10000);
+            
+            // Run performance tests
+            setTimeout(() => testPaymentSpeed(), 11000);
+            setTimeout(() => testMemoryUsage(), 12000);
+            
+            log('All tests scheduled. Results will appear as tests complete.', 'info');
+        }
+
+        // Initialize test environment
+        document.addEventListener('DOMContentLoaded', function() {
+            log('Payment System Test Environment Ready');
+            log('Click on any payment method to test individual functionality');
+            log('Or use "Run All Tests" to execute comprehensive test suite');
+            
+            // Initialize wallet balance display
+            document.getElementById('wallet-balance-test').textContent = `$${paymentSystem.getWalletBalance().toFixed(2)}`;
+        });
+    </script>
+</body>
+</html>

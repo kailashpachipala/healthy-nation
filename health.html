@@ -1,0 +1,1343 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Health Monitoring - Healthy Nation</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/echarts@5.4.3/dist/echarts.min.js"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+        }
+        
+        .vital-monitor-card {
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .vital-monitor-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 12px 24px rgba(0, 0, 0, 0.1);
+        }
+        
+        .vital-monitor-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, #2563eb 0%, #0891b2 100%);
+        }
+        
+        .device-card {
+            background: white;
+            border-radius: 12px;
+            border: 2px solid #e5e7eb;
+            transition: all 0.3s ease;
+        }
+        
+        .device-card.connected {
+            border-color: #059669;
+            background: linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%);
+        }
+        
+        .device-card.connecting {
+            border-color: #d97706;
+            background: linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%);
+        }
+        
+        .chart-container {
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+        }
+        
+        .alert-card {
+            background: linear-gradient(135deg, #fef2f2 0%, #fee2e2 100%);
+            border: 2px solid #fecaca;
+            border-radius: 12px;
+        }
+        
+        .alert-card.warning {
+            background: linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%);
+            border-color: #fed7aa;
+        }
+        
+        .alert-card.success {
+            background: linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%);
+            border-color: #bbf7d0;
+        }
+        
+        .pulse-ring {
+            animation: pulse-ring 2s infinite;
+        }
+        
+        @keyframes pulse-ring {
+            0% {
+                transform: scale(0.8);
+                opacity: 1;
+            }
+            100% {
+                transform: scale(2.4);
+                opacity: 0;
+            }
+        }
+        
+        .vital-value {
+            font-size: 2rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, #2563eb 0%, #0891b2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .trend-arrow {
+            transition: all 0.3s ease;
+        }
+        
+        .trend-arrow.up {
+            color: #059669;
+            transform: rotate(0deg);
+        }
+        
+        .trend-arrow.down {
+            color: #dc2626;
+            transform: rotate(180deg);
+        }
+        
+        .trend-arrow.stable {
+            color: #6b7280;
+            transform: rotate(90deg);
+        }
+        
+        .bottom-nav {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-top: 1px solid rgba(0, 0, 0, 0.1);
+        }
+        
+        .nav-item {
+            transition: all 0.3s ease;
+        }
+        
+        .nav-item.active {
+            color: #2563eb;
+        }
+        
+        .nav-item:hover {
+            color: #2563eb;
+            transform: translateY(-2px);
+        }
+        
+        .device-status {
+            position: relative;
+        }
+        
+        .device-status::after {
+            content: '';
+            position: absolute;
+            top: -2px;
+            right: -2px;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            border: 2px solid white;
+        }
+        
+        .device-status.connected::after {
+            background: #059669;
+        }
+        
+        .device-status.disconnected::after {
+            background: #dc2626;
+        }
+        
+        .device-status.connecting::after {
+            background: #d97706;
+            animation: pulse 2s infinite;
+        }
+    </style>
+</head>
+<body class="min-h-screen pb-20">
+    <!-- Header -->
+    <header class="bg-white shadow-sm border-b border-gray-200">
+        <div class="max-w-7xl mx-auto px-4 py-4">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center space-x-3">
+                    <button onclick="window.location.href='index.html'" class="p-2 hover:bg-gray-100 rounded-lg transition-colors">
+                        <i class="fas fa-arrow-left text-gray-600"></i>
+                    </button>
+                    <div>
+                        <h1 class="text-xl font-bold text-gray-900">Health Monitoring</h1>
+                        <p class="text-sm text-gray-600">Live vitals and trends</p>
+                    </div>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <button id="monitor-toggle" class="bg-green-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-green-700 transition-colors">
+                        <i class="fas fa-play mr-2"></i>Start Monitoring
+                    </button>
+                    <button class="p-2 text-gray-600 hover:text-blue-600 transition-colors">
+                        <i class="fas fa-download text-xl"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="max-w-7xl mx-auto px-4 py-6 space-y-6">
+        <!-- Device Connection Status -->
+        <section class="fade-in">
+            <h2 class="text-xl font-semibold text-gray-900 mb-4">Connected Devices</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                <!-- Apple Watch -->
+                <div class="device-card connected p-4">
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center space-x-3">
+                            <div class="device-status connected w-12 h-12 bg-gray-100 rounded-lg flex items-center justify-center">
+                                <i class="fab fa-apple text-xl text-gray-700"></i>
+                            </div>
+                            <div>
+                                <h3 class="font-semibold text-gray-900">Apple Watch</h3>
+                                <p class="text-sm text-green-600">Connected</p>
+                                <p class="text-xs text-gray-500">Battery: 85%</p>
+                            </div>
+                        </div>
+                        <button class="text-blue-600 text-sm hover:underline">Settings</button>
+                    </div>
+                    <div class="mt-4 grid grid-cols-2 gap-2 text-sm">
+                        <div class="bg-white p-2 rounded-lg">
+                            <div class="text-xs text-gray-500">Last sync</div>
+                            <div class="font-medium">2 min ago</div>
+                        </div>
+                        <div class="bg-white p-2 rounded-lg">
+                            <div class="text-xs text-gray-500">Data points</div>
+                            <div class="font-medium">1,247</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Blood Pressure Monitor -->
+                <div class="device-card connected p-4">
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center space-x-3">
+                            <div class="device-status connected w-12 h-12 bg-gray-100 rounded-lg flex items-center justify-center">
+                                <i class="fas fa-heartbeat text-xl text-red-600"></i>
+                            </div>
+                            <div>
+                                <h3 class="font-semibold text-gray-900">Omron BP Monitor</h3>
+                                <p class="text-sm text-green-600">Connected</p>
+                                <p class="text-xs text-gray-500">Model: HEM-7120</p>
+                            </div>
+                        </div>
+                        <button class="text-blue-600 text-sm hover:underline">Settings</button>
+                    </div>
+                    <div class="mt-4 grid grid-cols-2 gap-2 text-sm">
+                        <div class="bg-white p-2 rounded-lg">
+                            <div class="text-xs text-gray-500">Last reading</div>
+                            <div class="font-medium">5 min ago</div>
+                        </div>
+                        <div class="bg-white p-2 rounded-lg">
+                            <div class="text-xs text-gray-500">Readings</div>
+                            <div class="font-medium">156</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Add Device Card -->
+                <div class="device-card p-4 border-dashed border-2 border-gray-300 flex items-center justify-center cursor-pointer hover:border-blue-400 transition-colors" onclick="simulateDeviceConnection()">
+                    <div class="text-center">
+                        <div class="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-3">
+                            <i class="fas fa-plus text-blue-600 text-xl"></i>
+                        </div>
+                        <h3 class="font-semibold text-gray-900">Add Device</h3>
+                        <p class="text-sm text-gray-600">Connect new device</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Live Vitals Grid -->
+        <section class="slide-in">
+            <h2 class="text-xl font-semibold text-gray-900 mb-4">Live Vitals</h2>
+            <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                <!-- Heart Rate Monitor -->
+                <div class="vital-monitor-card p-6 text-center">
+                    <div class="relative mb-4">
+                        <div class="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto">
+                            <i class="fas fa-heart text-red-500 text-2xl"></i>
+                        </div>
+                        <div class="absolute top-0 left-1/2 transform -translate-x-1/2">
+                            <div class="pulse-ring w-16 h-16 bg-red-200 rounded-full opacity-75"></div>
+                        </div>
+                    </div>
+                    <div class="vital-value" id="heart-rate-live">72</div>
+                    <div class="text-sm text-gray-600 mb-2">Heart Rate</div>
+                    <div class="flex items-center justify-center space-x-2">
+                        <i class="fas fa-arrow-up trend-arrow up text-xs"></i>
+                        <span class="text-xs text-green-600">+2 bpm</span>
+                    </div>
+                </div>
+
+                <!-- Blood Pressure Monitor -->
+                <div class="vital-monitor-card p-6 text-center">
+                    <div class="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <i class="fas fa-tint text-blue-500 text-2xl"></i>
+                    </div>
+                    <div class="vital-value text-lg leading-tight">
+                        <div id="systolic-pressure">120</div>
+                        <div class="text-base">/ <span id="diastolic-pressure">80</span></div>
+                    </div>
+                    <div class="text-sm text-gray-600 mb-2">Blood Pressure</div>
+                    <div class="flex items-center justify-center space-x-2">
+                        <i class="fas fa-minus trend-arrow stable text-xs"></i>
+                        <span class="text-xs text-gray-600">Stable</span>
+                    </div>
+                </div>
+
+                <!-- SpO2 Monitor -->
+                <div class="vital-monitor-card p-6 text-center">
+                    <div class="w-16 h-16 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <i class="fas fa-lungs text-purple-500 text-2xl"></i>
+                    </div>
+                    <div class="vital-value" id="spO2-live">98</div>
+                    <div class="text-sm text-gray-600 mb-2">SpO₂</div>
+                    <div class="flex items-center justify-center space-x-2">
+                        <i class="fas fa-minus trend-arrow stable text-xs"></i>
+                        <span class="text-xs text-gray-600">Stable</span>
+                    </div>
+                </div>
+
+                <!-- Respiratory Rate -->
+                <div class="vital-monitor-card p-6 text-center">
+                    <div class="w-16 h-16 bg-teal-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <i class="fas fa-wind text-teal-500 text-2xl"></i>
+                    </div>
+                    <div class="vital-value" id="respiratory-rate-live">16</div>
+                    <div class="text-sm text-gray-600 mb-2">Respiratory Rate</div>
+                    <div class="flex items-center justify-center space-x-2">
+                        <i class="fas fa-arrow-down trend-arrow down text-xs"></i>
+                        <span class="text-xs text-red-600">-1 rpm</span>
+                    </div>
+                </div>
+
+                <!-- Body Temperature -->
+                <div class="vital-monitor-card p-6 text-center">
+                    <div class="w-16 h-16 bg-orange-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <i class="fas fa-thermometer-half text-orange-500 text-2xl"></i>
+                    </div>
+                    <div class="vital-value" id="temperature-live">98.6</div>
+                    <div class="text-sm text-gray-600 mb-2">Temperature</div>
+                    <div class="flex items-center justify-center space-x-2">
+                        <i class="fas fa-minus trend-arrow stable text-xs"></i>
+                        <span class="text-xs text-gray-600">Normal</span>
+                    </div>
+                </div>
+
+                <!-- ECG Status -->
+                <div class="vital-monitor-card p-6 text-center">
+                    <div class="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <i class="fas fa-chart-line text-green-500 text-2xl"></i>
+                    </div>
+                    <div class="vital-value text-lg" id="ecg-status">Normal</div>
+                    <div class="text-sm text-gray-600 mb-2">ECG Status</div>
+                    <div class="flex items-center justify-center space-x-2">
+                        <i class="fas fa-check-circle text-green-600 text-xs"></i>
+                        <span class="text-xs text-green-600">Healthy</span>
+                    </div>
+                </div>
+
+                <!-- Steps Counter -->
+                <div class="vital-monitor-card p-6 text-center">
+                    <div class="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <i class="fas fa-walking text-green-500 text-2xl"></i>
+                    </div>
+                    <div class="vital-value" id="steps-live">8,432</div>
+                    <div class="text-sm text-gray-600 mb-2">Steps Today</div>
+                    <div class="flex items-center justify-center space-x-2">
+                        <i class="fas fa-arrow-up trend-arrow up text-xs"></i>
+                        <span class="text-xs text-green-600">+156</span>
+                    </div>
+                </div>
+
+                <!-- Calories Burned -->
+                <div class="vital-monitor-card p-6 text-center">
+                    <div class="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <i class="fas fa-fire text-red-500 text-2xl"></i>
+                    </div>
+                    <div class="vital-value" id="calories-live">342</div>
+                    <div class="text-sm text-gray-600 mb-2">Calories</div>
+                    <div class="flex items-center justify-center space-x-2">
+                        <i class="fas fa-arrow-up trend-arrow up text-xs"></i>
+                        <span class="text-xs text-green-600">+12</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Interactive Charts -->
+        <section class="slide-in">
+            <h2 class="text-xl font-semibold text-gray-900 mb-4">Health Trends</h2>
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <!-- Heart Rate Chart -->
+                <div class="chart-container p-6">
+                    <div class="flex justify-between items-center mb-4">
+                        <h3 class="text-lg font-semibold text-gray-900">Heart Rate Trend</h3>
+                        <div class="flex space-x-2">
+                            <button class="chart-period-btn active px-3 py-1 text-sm bg-blue-600 text-white rounded-lg" data-period="7d" data-chart="hr">7D</button>
+                            <button class="chart-period-btn px-3 py-1 text-sm text-gray-600 hover:bg-gray-100 rounded-lg" data-period="30d" data-chart="hr">30D</button>
+                            <button class="chart-period-btn px-3 py-1 text-sm text-gray-600 hover:bg-gray-100 rounded-lg" data-period="90d" data-chart="hr">90D</button>
+                        </div>
+                    </div>
+                    <div id="heart-rate-chart" style="height: 300px;"></div>
+                </div>
+
+                <!-- Blood Pressure Chart -->
+                <div class="chart-container p-6">
+                    <div class="flex justify-between items-center mb-4">
+                        <h3 class="text-lg font-semibold text-gray-900">Blood Pressure</h3>
+                        <div class="flex space-x-2">
+                            <button class="chart-period-btn active px-3 py-1 text-sm bg-blue-600 text-white rounded-lg" data-period="7d" data-chart="bp">7D</button>
+                            <button class="chart-period-btn px-3 py-1 text-sm text-gray-600 hover:bg-gray-100 rounded-lg" data-period="30d" data-chart="bp">30D</button>
+                            <button class="chart-period-btn px-3 py-1 text-sm text-gray-600 hover:bg-gray-100 rounded-lg" data-period="90d" data-chart="bp">90D</button>
+                        </div>
+                    </div>
+                    <div id="blood-pressure-chart" style="height: 300px;"></div>
+                </div>
+
+                <!-- Steps Chart -->
+                <div class="chart-container p-6">
+                    <div class="flex justify-between items-center mb-4">
+                        <h3 class="text-lg font-semibold text-gray-900">Daily Steps</h3>
+                        <div class="flex space-x-2">
+                            <button class="chart-period-btn active px-3 py-1 text-sm bg-blue-600 text-white rounded-lg" data-period="7d" data-chart="steps">7D</button>
+                            <button class="chart-period-btn px-3 py-1 text-sm text-gray-600 hover:bg-gray-100 rounded-lg" data-period="30d" data-chart="steps">30D</button>
+                            <button class="chart-period-btn px-3 py-1 text-sm text-gray-600 hover:bg-gray-100 rounded-lg" data-period="90d" data-chart="steps">90D</button>
+                        </div>
+                    </div>
+                    <div id="steps-chart" style="height: 300px;"></div>
+                </div>
+
+                <!-- Glucose Chart -->
+                <div class="chart-container p-6">
+                    <div class="flex justify-between items-center mb-4">
+                        <h3 class="text-lg font-semibold text-gray-900">Glucose Levels</h3>
+                        <div class="flex space-x-2">
+                            <button class="chart-period-btn active px-3 py-1 text-sm bg-blue-600 text-white rounded-lg" data-period="7d" data-chart="glucose">7D</button>
+                            <button class="chart-period-btn px-3 py-1 text-sm text-gray-600 hover:bg-gray-100 rounded-lg" data-period="30d" data-chart="glucose">30D</button>
+                            <button class="chart-period-btn px-3 py-1 text-sm text-gray-600 hover:bg-gray-100 rounded-lg" data-period="90d" data-chart="glucose">90D</button>
+                        </div>
+                    </div>
+                    <div id="glucose-chart" style="height: 300px;"></div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Weekly Reports & Data Export -->
+        <section class="slide-in">
+            <div class="flex justify-between items-center mb-6">
+                <h3 class="text-xl font-semibold text-gray-900">Weekly Health Reports</h3>
+                <div class="flex space-x-3">
+                    <button onclick="generateWeeklyReport()" class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors">
+                        <i class="fas fa-chart-line mr-2"></i>Generate Report
+                    </button>
+                    <button onclick="showExportOptions()" class="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors">
+                        <i class="fas fa-download mr-2"></i>Export Data
+                    </button>
+                </div>
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- Weekly Summary -->
+                <div class="bg-white rounded-xl p-6 shadow-md">
+                    <h4 class="text-lg font-semibold text-gray-900 mb-4">This Week's Summary</h4>
+                    <div class="space-y-4">
+                        <div class="flex justify-between items-center">
+                            <span class="text-gray-600">Average Heart Rate</span>
+                            <span class="font-semibold text-gray-900" id="weekly-hr-avg">72 bpm</span>
+                        </div>
+                        <div class="flex justify-between items-center">
+                            <span class="text-gray-600">Average Blood Pressure</span>
+                            <span class="font-semibold text-gray-900" id="weekly-bp-avg">120/80 mmHg</span>
+                        </div>
+                        <div class="flex justify-between items-center">
+                            <span class="text-gray-600">Total Steps</span>
+                            <span class="font-semibold text-gray-900" id="weekly-steps-total">52,847</span>
+                        </div>
+                        <div class="flex justify-between items-center">
+                            <span class="text-gray-600">Average Glucose</span>
+                            <span class="font-semibold text-gray-900" id="weekly-glucose-avg">95 mg/dL</span>
+                        </div>
+                        <div class="flex justify-between items-center">
+                            <span class="text-gray-600">Health Score</span>
+                            <span class="font-semibold text-green-600" id="weekly-health-score">85/100</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Weekly Trends -->
+                <div class="bg-white rounded-xl p-6 shadow-md">
+                    <h4 class="text-lg font-semibold text-gray-900 mb-4">Weekly Trends</h4>
+                    <div class="space-y-4">
+                        <div class="flex items-center justify-between">
+                            <span class="text-gray-600">Heart Rate</span>
+                            <div class="flex items-center">
+                                <i class="fas fa-arrow-down text-green-500 mr-1"></i>
+                                <span class="text-green-600 text-sm">2% decrease</span>
+                            </div>
+                        </div>
+                        <div class="flex items-center justify-between">
+                            <span class="text-gray-600">Steps</span>
+                            <div class="flex items-center">
+                                <i class="fas fa-arrow-up text-green-500 mr-1"></i>
+                                <span class="text-green-600 text-sm">8% increase</span>
+                            </div>
+                        </div>
+                        <div class="flex items-center justify-between">
+                            <span class="text-gray-600">Sleep Quality</span>
+                            <div class="flex items-center">
+                                <i class="fas fa-arrow-up text-green-500 mr-1"></i>
+                                <span class="text-green-600 text-sm">5% improvement</span>
+                            </div>
+                        </div>
+                        <div class="flex items-center justify-between">
+                            <span class="text-gray-600">Glucose Stability</span>
+                            <div class="flex items-center">
+                                <i class="fas fa-arrow-down text-green-500 mr-1"></i>
+                                <span class="text-green-600 text-sm">3% more stable</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Report Actions -->
+            <div class="mt-6 flex flex-wrap gap-4">
+                <button onclick="shareWeeklyReport()" class="bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700 transition-colors">
+                    <i class="fas fa-share mr-2"></i>Share Report
+                </button>
+                <button onclick="scheduleWeeklyReports()" class="bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 transition-colors">
+                    <i class="fas fa-calendar-alt mr-2"></i>Schedule Reports
+                </button>
+                <button onclick="viewHistoricalReports()" class="bg-gray-600 text-white px-4 py-2 rounded-lg hover:bg-gray-700 transition-colors">
+                    <i class="fas fa-history mr-2"></i>View History
+                </button>
+            </div>
+        </section>
+
+        <!-- Threshold Alerts -->
+        <section class="slide-in">
+            <h2 class="text-xl font-semibold text-gray-900 mb-4">Health Alerts</h2>
+            <div class="space-y-4">
+                <div class="alert-card warning p-4">
+                    <div class="flex items-start space-x-3">
+                        <div class="w-8 h-8 bg-yellow-100 rounded-full flex items-center justify-center flex-shrink-0">
+                            <i class="fas fa-exclamation-triangle text-yellow-600"></i>
+                        </div>
+                        <div class="flex-1">
+                            <h4 class="font-semibold text-yellow-800">Elevated Heart Rate</h4>
+                            <p class="text-sm text-yellow-700 mt-1">Your heart rate has been consistently above 100 bpm for the last 15 minutes.</p>
+                            <div class="flex space-x-3 mt-3">
+                                <button onclick="window.location.href='assistant.html'" class="text-sm bg-yellow-600 text-white px-3 py-1 rounded-lg hover:bg-yellow-700">
+                                    Ask AI Assistant
+                                </button>
+                                <button onclick="window.location.href='doctors.html'" class="text-sm bg-white text-yellow-700 px-3 py-1 rounded-lg border border-yellow-300 hover:bg-yellow-50">
+                                    Book Doctor
+                                </button>
+                                <button onclick="emergencySystem.triggerEmergency()" class="text-sm bg-red-600 text-white px-3 py-1 rounded-lg hover:bg-red-700">
+                                    Emergency
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="alert-card success p-4">
+                    <div class="flex items-start space-x-3">
+                        <div class="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center flex-shrink-0">
+                            <i class="fas fa-check-circle text-green-600"></i>
+                        </div>
+                        <div class="flex-1">
+                            <h4 class="font-semibold text-green-800">Great Progress!</h4>
+                            <p class="text-sm text-green-700 mt-1">You've maintained healthy blood pressure levels for the past week.</p>
+                            <div class="flex space-x-3 mt-3">
+                                <button class="text-sm bg-green-600 text-white px-3 py-1 rounded-lg hover:bg-green-700">
+                                    View Report
+                                </button>
+                                <button class="text-sm bg-white text-green-700 px-3 py-1 rounded-lg border border-green-300 hover:bg-green-50">
+                                    Share
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Health Goals -->
+        <section class="slide-in">
+            <h2 class="text-xl font-semibold text-gray-900 mb-4">Health Goals</h2>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div class="bg-white p-6 rounded-xl shadow-md">
+                    <div class="flex items-center justify-between mb-4">
+                        <h3 class="font-semibold text-gray-900">Daily Steps</h3>
+                        <i class="fas fa-walking text-green-500 text-xl"></i>
+                    </div>
+                    <div class="mb-4">
+                        <div class="flex justify-between text-sm mb-2">
+                            <span>8,432 / 10,000</span>
+                            <span>84%</span>
+                        </div>
+                        <div class="w-full bg-gray-200 rounded-full h-3">
+                            <div class="bg-green-500 h-3 rounded-full" style="width: 84%"></div>
+                        </div>
+                    </div>
+                    <p class="text-sm text-gray-600">1,568 steps to reach your goal</p>
+                </div>
+
+                <div class="bg-white p-6 rounded-xl shadow-md">
+                    <div class="flex items-center justify-between mb-4">
+                        <h3 class="font-semibold text-gray-900">Active Minutes</h3>
+                        <i class="fas fa-fire text-red-500 text-xl"></i>
+                    </div>
+                    <div class="mb-4">
+                        <div class="flex justify-between text-sm mb-2">
+                            <span>45 / 60 min</span>
+                            <span>75%</span>
+                        </div>
+                        <div class="w-full bg-gray-200 rounded-full h-3">
+                            <div class="bg-red-500 h-3 rounded-full" style="width: 75%"></div>
+                        </div>
+                    </div>
+                    <p class="text-sm text-gray-600">15 more minutes to go!</p>
+                </div>
+
+                <div class="bg-white p-6 rounded-xl shadow-md">
+                    <div class="flex items-center justify-between mb-4">
+                        <h3 class="font-semibold text-gray-900">Sleep Goal</h3>
+                        <i class="fas fa-moon text-blue-500 text-xl"></i>
+                    </div>
+                    <div class="mb-4">
+                        <div class="flex justify-between text-sm mb-2">
+                            <span>7.5 / 8 hours</span>
+                            <span>94%</span>
+                        </div>
+                        <div class="w-full bg-gray-200 rounded-full h-3">
+                            <div class="bg-blue-500 h-3 rounded-full" style="width: 94%"></div>
+                        </div>
+                    </div>
+                    <p class="text-sm text-gray-600">Great sleep quality last night!</p>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Emergency FAB -->
+    <button onclick="emergencySystem.triggerEmergency()" class="fixed bottom-24 right-6 w-14 h-14 bg-red-600 text-white rounded-full shadow-lg flex items-center justify-center z-40 hover:bg-red-700 transition-colors">
+        <i class="fas fa-exclamation text-xl"></i>
+    </button>
+
+    <!-- Bottom Navigation -->
+    <nav class="bottom-nav fixed bottom-0 left-0 right-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 py-3">
+            <div class="flex justify-around items-center">
+                <a href="index.html" class="nav-item flex flex-col items-center space-y-1 text-gray-600">
+                    <i class="fas fa-home text-xl"></i>
+                    <span class="text-xs font-medium">Home</span>
+                </a>
+                <a href="health.html" class="nav-item active flex flex-col items-center space-y-1">
+                    <i class="fas fa-heartbeat text-xl"></i>
+                    <span class="text-xs font-medium">Health</span>
+                </a>
+                <a href="assistant.html" class="nav-item flex flex-col items-center space-y-1 text-gray-600">
+                    <i class="fas fa-robot text-xl"></i>
+                    <span class="text-xs font-medium">Assistant</span>
+                </a>
+                <a href="doctors.html" class="nav-item flex flex-col items-center space-y-1 text-gray-600">
+                    <i class="fas fa-user-md text-xl"></i>
+                    <span class="text-xs font-medium">Doctors</span>
+                </a>
+                <a href="profile.html" class="nav-item flex flex-col items-center space-y-1 text-gray-600">
+                    <i class="fas fa-user text-xl"></i>
+                    <span class="text-xs font-medium">Profile</span>
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Scripts -->
+    <script src="main.js"></script>
+    <script>
+        // Chart instances
+        let hrChart, bpChart, stepsChart, glucoseChart;
+
+        // Initialize charts when page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeCharts();
+            setupChartControls();
+            setupMonitoringToggle();
+            
+            // Start with monitoring enabled
+            setTimeout(() => {
+                vitalSignsMonitor.startMonitoring();
+                updateMonitoringButton(true);
+            }, 1000);
+        });
+
+        function initializeCharts() {
+            // Heart Rate Chart
+            hrChart = echarts.init(document.getElementById('heart-rate-chart'));
+            const hrOption = {
+                tooltip: {
+                    trigger: 'axis',
+                    axisPointer: { type: 'cross' }
+                },
+                grid: {
+                    left: '3%',
+                    right: '4%',
+                    bottom: '3%',
+                    containLabel: true
+                },
+                xAxis: {
+                    type: 'category',
+                    data: generateDateLabels(7),
+                    axisLine: { lineStyle: { color: '#e5e7eb' } },
+                    axisLabel: { color: '#6b7280' }
+                },
+                yAxis: {
+                    type: 'value',
+                    min: 60,
+                    max: 100,
+                    axisLine: { lineStyle: { color: '#e5e7eb' } },
+                    axisLabel: { color: '#6b7280' },
+                    splitLine: { lineStyle: { color: '#f3f4f6' } }
+                },
+                series: [{
+                    name: 'Heart Rate',
+                    type: 'line',
+                    data: generateHeartRateData(7),
+                    smooth: true,
+                    lineStyle: { color: '#dc2626', width: 3 },
+                    itemStyle: { color: '#dc2626' },
+                    areaStyle: {
+                        color: {
+                            type: 'linear',
+                            x: 0, y: 0, x2: 0, y2: 1,
+                            colorStops: [
+                                { offset: 0, color: 'rgba(220, 38, 38, 0.3)' },
+                                { offset: 1, color: 'rgba(220, 38, 38, 0.05)' }
+                            ]
+                        }
+                    }
+                }]
+            };
+            hrChart.setOption(hrOption);
+
+            // Blood Pressure Chart
+            bpChart = echarts.init(document.getElementById('blood-pressure-chart'));
+            const bpOption = {
+                tooltip: {
+                    trigger: 'axis',
+                    axisPointer: { type: 'cross' }
+                },
+                legend: {
+                    data: ['Systolic', 'Diastolic'],
+                    textStyle: { color: '#6b7280' }
+                },
+                grid: {
+                    left: '3%',
+                    right: '4%',
+                    bottom: '3%',
+                    containLabel: true
+                },
+                xAxis: {
+                    type: 'category',
+                    data: generateDateLabels(7),
+                    axisLine: { lineStyle: { color: '#e5e7eb' } },
+                    axisLabel: { color: '#6b7280' }
+                },
+                yAxis: {
+                    type: 'value',
+                    min: 60,
+                    max: 160,
+                    axisLine: { lineStyle: { color: '#e5e7eb' } },
+                    axisLabel: { color: '#6b7280' },
+                    splitLine: { lineStyle: { color: '#f3f4f6' } }
+                },
+                series: [
+                    {
+                        name: 'Systolic',
+                        type: 'line',
+                        data: generateSystolicData(7),
+                        smooth: true,
+                        lineStyle: { color: '#2563eb', width: 3 },
+                        itemStyle: { color: '#2563eb' }
+                    },
+                    {
+                        name: 'Diastolic',
+                        type: 'line',
+                        data: generateDiastolicData(7),
+                        smooth: true,
+                        lineStyle: { color: '#0891b2', width: 3 },
+                        itemStyle: { color: '#0891b2' }
+                    }
+                ]
+            };
+            bpChart.setOption(bpOption);
+
+            // Steps Chart
+            stepsChart = echarts.init(document.getElementById('steps-chart'));
+            const stepsOption = {
+                tooltip: {
+                    trigger: 'axis',
+                    axisPointer: { type: 'shadow' }
+                },
+                grid: {
+                    left: '3%',
+                    right: '4%',
+                    bottom: '3%',
+                    containLabel: true
+                },
+                xAxis: {
+                    type: 'category',
+                    data: generateDateLabels(7),
+                    axisLine: { lineStyle: { color: '#e5e7eb' } },
+                    axisLabel: { color: '#6b7280' }
+                },
+                yAxis: {
+                    type: 'value',
+                    axisLine: { lineStyle: { color: '#e5e7eb' } },
+                    axisLabel: { color: '#6b7280' },
+                    splitLine: { lineStyle: { color: '#f3f4f6' } }
+                },
+                series: [{
+                    name: 'Steps',
+                    type: 'bar',
+                    data: generateStepsData(7),
+                    itemStyle: {
+                        color: {
+                            type: 'linear',
+                            x: 0, y: 0, x2: 0, y2: 1,
+                            colorStops: [
+                                { offset: 0, color: '#059669' },
+                                { offset: 1, color: '#10b981' }
+                            ]
+                        }
+                    },
+                    barWidth: '60%'
+                }]
+            };
+            stepsChart.setOption(stepsOption);
+
+            // Glucose Chart
+            glucoseChart = echarts.init(document.getElementById('glucose-chart'));
+            const glucoseOption = {
+                tooltip: {
+                    trigger: 'axis',
+                    axisPointer: { type: 'cross' }
+                },
+                grid: {
+                    left: '3%',
+                    right: '4%',
+                    bottom: '3%',
+                    containLabel: true
+                },
+                xAxis: {
+                    type: 'category',
+                    data: generateDateLabels(7),
+                    axisLine: { lineStyle: { color: '#e5e7eb' } },
+                    axisLabel: { color: '#6b7280' }
+                },
+                yAxis: {
+                    type: 'value',
+                    min: 70,
+                    max: 150,
+                    axisLine: { lineStyle: { color: '#e5e7eb' } },
+                    axisLabel: { color: '#6b7280' },
+                    splitLine: { lineStyle: { color: '#f3f4f6' } }
+                },
+                series: [{
+                    name: 'Glucose',
+                    type: 'line',
+                    data: generateGlucoseData(7),
+                    smooth: true,
+                    lineStyle: { color: '#f59e0b', width: 3 },
+                    itemStyle: { color: '#f59e0b' },
+                    areaStyle: {
+                        color: {
+                            type: 'linear',
+                            x: 0, y: 0, x2: 0, y2: 1,
+                            colorStops: [
+                                { offset: 0, color: 'rgba(245, 158, 11, 0.3)' },
+                                { offset: 1, color: 'rgba(245, 158, 11, 0.05)' }
+                            ]
+                        }
+                    }
+                }]
+            };
+            glucoseChart.setOption(glucoseOption);
+        }
+
+        function setupChartControls() {
+            document.querySelectorAll('.chart-period-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const period = this.dataset.period;
+                    const chartType = this.dataset.chart;
+                    
+                    // Update active state
+                    document.querySelectorAll(`[data-chart="${chartType}"]`).forEach(b => b.classList.remove('active', 'bg-blue-600', 'text-white'));
+                    document.querySelectorAll(`[data-chart="${chartType}"]`).forEach(b => b.classList.add('text-gray-600', 'hover:bg-gray-100'));
+                    this.classList.add('active', 'bg-blue-600', 'text-white');
+                    this.classList.remove('text-gray-600', 'hover:bg-gray-100');
+                    
+                    // Update chart data
+                    updateChartData(chartType, period);
+                });
+            });
+        }
+
+        function updateChartData(chartType, period) {
+            const days = period === '7d' ? 7 : period === '30d' ? 30 : 90;
+            const dates = generateDateLabels(days);
+            
+            switch(chartType) {
+                case 'hr':
+                    hrChart.setOption({
+                        xAxis: { data: dates },
+                        series: [{ data: generateHeartRateData(days) }]
+                    });
+                    break;
+                case 'bp':
+                    bpChart.setOption({
+                        xAxis: { data: dates },
+                        series: [
+                            { data: generateSystolicData(days) },
+                            { data: generateDiastolicData(days) }
+                        ]
+                    });
+                    break;
+                case 'steps':
+                    stepsChart.setOption({
+                        xAxis: { data: dates },
+                        series: [{ data: generateStepsData(days) }]
+                    });
+                    break;
+                case 'glucose':
+                    glucoseChart.setOption({
+                        xAxis: { data: dates },
+                        series: [{ data: generateGlucoseData(days) }]
+                    });
+                    break;
+            }
+        }
+
+        function setupMonitoringToggle() {
+            const toggleBtn = document.getElementById('monitor-toggle');
+            toggleBtn.addEventListener('click', function() {
+                if (vitalSignsMonitor.isMonitoring) {
+                    vitalSignsMonitor.stopMonitoring();
+                    updateMonitoringButton(false);
+                } else {
+                    vitalSignsMonitor.startMonitoring();
+                    updateMonitoringButton(true);
+                }
+            });
+        }
+
+        function updateMonitoringButton(isMonitoring) {
+            const toggleBtn = document.getElementById('monitor-toggle');
+            if (isMonitoring) {
+                toggleBtn.innerHTML = '<i class="fas fa-stop mr-2"></i>Stop Monitoring';
+                toggleBtn.classList.remove('bg-green-600', 'hover:bg-green-700');
+                toggleBtn.classList.add('bg-red-600', 'hover:bg-red-700');
+            } else {
+                toggleBtn.innerHTML = '<i class="fas fa-play mr-2"></i>Start Monitoring';
+                toggleBtn.classList.remove('bg-red-600', 'hover:bg-red-700');
+                toggleBtn.classList.add('bg-green-600', 'hover:bg-green-700');
+            }
+        }
+
+        function simulateDeviceConnection() {
+            notificationSystem.show('Scanning for devices...', 'info');
+            
+            // Simulate device discovery
+            setTimeout(() => {
+                notificationSystem.show('Found 2 devices nearby', 'success');
+                
+                // Simulate connection
+                setTimeout(() => {
+                    notificationSystem.show('Connected to Garmin Venu', 'success');
+                }, 2000);
+            }, 2000);
+        }
+
+        // Data generation functions
+        function generateDateLabels(days) {
+            const labels = [];
+            for (let i = days - 1; i >= 0; i--) {
+                const date = new Date();
+                date.setDate(date.getDate() - i);
+                labels.push(date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }));
+            }
+            return labels;
+        }
+
+        function generateHeartRateData(days) {
+            const data = [];
+            for (let i = 0; i < days; i++) {
+                data.push(Math.floor(Math.random() * 30) + 65); // 65-95 bpm
+            }
+            return data;
+        }
+
+        function generateSystolicData(days) {
+            const data = [];
+            for (let i = 0; i < days; i++) {
+                data.push(Math.floor(Math.random() * 30) + 110); // 110-140 mmHg
+            }
+            return data;
+        }
+
+        function generateDiastolicData(days) {
+            const data = [];
+            for (let i = 0; i < days; i++) {
+                data.push(Math.floor(Math.random() * 20) + 70); // 70-90 mmHg
+            }
+            return data;
+        }
+
+        function generateStepsData(days) {
+            const data = [];
+            for (let i = 0; i < days; i++) {
+                data.push(Math.floor(Math.random() * 5000) + 5000); // 5000-10000 steps
+            }
+            return data;
+        }
+
+        function generateGlucoseData(days) {
+            const data = [];
+            for (let i = 0; i < days; i++) {
+                data.push(Math.floor(Math.random() * 40) + 80); // 80-120 mg/dL
+            }
+            return data;
+        }
+
+        // Resize charts on window resize
+        window.addEventListener('resize', function() {
+            if (hrChart) hrChart.resize();
+            if (bpChart) bpChart.resize();
+            if (stepsChart) stepsChart.resize();
+            if (glucoseChart) glucoseChart.resize();
+        });
+
+        // Weekly Reports and Data Export Functions
+        function generateWeeklyReport() {
+            notificationSystem.show('Generating weekly health report...', 'info');
+            
+            // Simulate report generation
+            setTimeout(() => {
+                const report = {
+                    period: 'Dec 4 - Dec 10, 2024',
+                    summary: {
+                        averageHeartRate: 72,
+                        averageBloodPressure: '120/80',
+                        totalSteps: 52847,
+                        averageGlucose: 95,
+                        healthScore: 85
+                    },
+                    trends: {
+                        heartRate: -2,
+                        steps: 8,
+                        sleep: 5,
+                        glucoseStability: 3
+                    },
+                    recommendations: [
+                        'Continue current exercise routine',
+                        'Maintain healthy diet',
+                        'Monitor blood pressure regularly'
+                    ]
+                };
+                
+                // Update weekly summary display
+                document.getElementById('weekly-hr-avg').textContent = `${report.summary.averageHeartRate} bpm`;
+                document.getElementById('weekly-bp-avg').textContent = report.summary.averageBloodPressure;
+                document.getElementById('weekly-steps-total').textContent = report.summary.totalSteps.toLocaleString();
+                document.getElementById('weekly-glucose-avg').textContent = `${report.summary.averageGlucose} mg/dL`;
+                document.getElementById('weekly-health-score').textContent = `${report.summary.healthScore}/100`;
+                
+                notificationSystem.show('Weekly report generated successfully!', 'success');
+                
+                // Save report to localStorage
+                localStorage.setItem('healthy_nation_weekly_report', JSON.stringify(report));
+            }, 2000);
+        }
+
+        function showExportOptions() {
+            const modal = document.createElement('div');
+            modal.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50';
+            modal.innerHTML = `
+                <div class="bg-white rounded-xl p-6 max-w-md w-full mx-4">
+                    <h3 class="text-xl font-semibold text-gray-900 mb-4">Export Health Data</h3>
+                    <div class="space-y-4">
+                        <button onclick="exportHealthData('pdf')" class="w-full flex items-center justify-between p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors">
+                            <div class="flex items-center">
+                                <i class="fas fa-file-pdf text-red-500 text-xl mr-3"></i>
+                                <div class="text-left">
+                                    <div class="font-medium text-gray-900">PDF Report</div>
+                                    <div class="text-sm text-gray-600">Comprehensive health report</div>
+                                </div>
+                            </div>
+                            <i class="fas fa-download text-gray-400"></i>
+                        </button>
+                        
+                        <button onclick="exportHealthData('csv')" class="w-full flex items-center justify-between p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors">
+                            <div class="flex items-center">
+                                <i class="fas fa-file-csv text-green-500 text-xl mr-3"></i>
+                                <div class="text-left">
+                                    <div class="font-medium text-gray-900">CSV Data</div>
+                                    <div class="text-sm text-gray-600">Raw data for analysis</div>
+                                </div>
+                            </div>
+                            <i class="fas fa-download text-gray-400"></i>
+                        </button>
+                        
+                        <button onclick="exportHealthData('json')" class="w-full flex items-center justify-between p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors">
+                            <div class="flex items-center">
+                                <i class="fas fa-file-code text-blue-500 text-xl mr-3"></i>
+                                <div class="text-left">
+                                    <div class="font-medium text-gray-900">JSON Export</div>
+                                    <div class="text-sm text-gray-600">Structured data export</div>
+                                </div>
+                            </div>
+                            <i class="fas fa-download text-gray-400"></i>
+                        </button>
+                        
+                        <button onclick="exportHealthData('share')" class="w-full flex items-center justify-between p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors">
+                            <div class="flex items-center">
+                                <i class="fas fa-share-alt text-purple-500 text-xl mr-3"></i>
+                                <div class="text-left">
+                                    <div class="font-medium text-gray-900">Share Report</div>
+                                    <div class="text-sm text-gray-600">Share with healthcare provider</div>
+                                </div>
+                            </div>
+                            <i class="fas fa-external-link-alt text-gray-400"></i>
+                        </button>
+                    </div>
+                    <button onclick="closeExportModal()" class="w-full mt-6 bg-gray-300 text-gray-700 py-2 px-4 rounded-lg hover:bg-gray-400 transition-colors">
+                        Cancel
+                    </button>
+                </div>
+            `;
+            document.body.appendChild(modal);
+            
+            // Animate in
+            anime({
+                targets: modal.querySelector('.bg-white'),
+                scale: [0.8, 1],
+                opacity: [0, 1],
+                duration: 300,
+                easing: 'easeOutQuart'
+            });
+        }
+
+        function closeExportModal() {
+            const modal = document.querySelector('.fixed.inset-0');
+            if (modal) {
+                modal.remove();
+            }
+        }
+
+        function exportHealthData(format) {
+            closeExportModal();
+            notificationSystem.show(`Exporting health data as ${format.toUpperCase()}...`, 'info');
+            
+            // Simulate data export
+            setTimeout(() => {
+                const healthData = {
+                    period: 'Dec 4 - Dec 10, 2024',
+                    vitals: {
+                        heartRate: generateHeartRateData(7),
+                        bloodPressure: {
+                            systolic: generateSystolicData(7),
+                            diastolic: generateDiastolicData(7)
+                        },
+                        steps: generateStepsData(7),
+                        glucose: generateGlucoseData(7)
+                    },
+                    summary: {
+                        averageHeartRate: 72,
+                        averageBloodPressure: '120/80',
+                        totalSteps: 52847,
+                        averageGlucose: 95
+                    }
+                };
+                
+                switch(format) {
+                    case 'pdf':
+                        // Simulate PDF generation
+                        notificationSystem.show('PDF report downloaded successfully!', 'success');
+                        break;
+                    case 'csv':
+                        // Simulate CSV export
+                        const csvData = generateCSVData(healthData);
+                        downloadFile(csvData, 'health-data.csv', 'text/csv');
+                        notificationSystem.show('CSV data exported successfully!', 'success');
+                        break;
+                    case 'json':
+                        // Simulate JSON export
+                        const jsonData = JSON.stringify(healthData, null, 2);
+                        downloadFile(jsonData, 'health-data.json', 'application/json');
+                        notificationSystem.show('JSON data exported successfully!', 'success');
+                        break;
+                    case 'share':
+                        // Simulate sharing
+                        if (navigator.share) {
+                            navigator.share({
+                                title: 'Weekly Health Report',
+                                text: 'My weekly health report from Healthy Nation',
+                                url: window.location.href
+                            });
+                        } else {
+                            notificationSystem.show('Sharing functionality not supported on this device', 'warning');
+                        }
+                        break;
+                }
+            }, 1500);
+        }
+
+        function generateCSVData(healthData) {
+            let csv = 'Date,Heart Rate (bpm),Systolic BP (mmHg),Diastolic BP (mmHg),Steps,Glucose (mg/dL)\n';
+            
+            for (let i = 0; i < 7; i++) {
+                const date = new Date();
+                date.setDate(date.getDate() - (6 - i));
+                csv += `${date.toISOString().split('T')[0]},`;
+                csv += `${healthData.vitals.heartRate[i]},`;
+                csv += `${healthData.vitals.bloodPressure.systolic[i]},`;
+                csv += `${healthData.vitals.bloodPressure.diastolic[i]},`;
+                csv += `${healthData.vitals.steps[i]},`;
+                csv += `${healthData.vitals.glucose[i]}\n`;
+            }
+            
+            return csv;
+        }
+
+        function downloadFile(content, filename, contentType) {
+            const blob = new Blob([content], { type: contentType });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = filename;
+            document.body.appendChild(a);
+            a.click();
+            window.URL.revokeObjectURL(url);
+            document.body.removeChild(a);
+        }
+
+        function shareWeeklyReport() {
+            notificationSystem.show('Preparing report for sharing...', 'info');
+            
+            setTimeout(() => {
+                if (navigator.share) {
+                    navigator.share({
+                        title: 'My Weekly Health Report',
+                        text: 'Check out my weekly health summary from Healthy Nation app',
+                        url: window.location.href
+                    });
+                } else {
+                    // Fallback for browsers that don't support Web Share API
+                    const shareText = `My Weekly Health Report\n\nHealth Score: 85/100\nAverage Heart Rate: 72 bpm\nTotal Steps: 52,847\n\nShared from Healthy Nation app`;
+                    
+                    if (navigator.clipboard) {
+                        navigator.clipboard.writeText(shareText);
+                        notificationSystem.show('Report copied to clipboard!', 'success');
+                    } else {
+                        notificationSystem.show('Please copy the report manually', 'info');
+                    }
+                }
+            }, 1000);
+        }
+
+        function scheduleWeeklyReports() {
+            notificationSystem.show('Opening report scheduling...', 'info');
+            
+            // Simulate scheduling interface
+            setTimeout(() => {
+                notificationSystem.show('Weekly reports scheduled successfully!', 'success');
+                
+                // Save schedule preference
+                localStorage.setItem('healthy_nation_weekly_reports_schedule', JSON.stringify({
+                    enabled: true,
+                    frequency: 'weekly',
+                    day: 'monday',
+                    time: '09:00'
+                }));
+            }, 1500);
+        }
+
+        function viewHistoricalReports() {
+            notificationSystem.show('Loading historical reports...', 'info');
+            
+            // Simulate loading historical data
+            setTimeout(() => {
+                const historicalReports = [
+                    { period: 'Nov 27 - Dec 3, 2024', score: 82, trend: 'up' },
+                    { period: 'Nov 20 - Nov 26, 2024', score: 79, trend: 'down' },
+                    { period: 'Nov 13 - Nov 19, 2024', score: 84, trend: 'up' }
+                ];
+                
+                let reportsHtml = '<div class="space-y-3">';
+                historicalReports.forEach(report => {
+                    const trendIcon = report.trend === 'up' ? 'fa-arrow-up text-green-500' : 'fa-arrow-down text-red-500';
+                    reportsHtml += `
+                        <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                            <div>
+                                <div class="font-medium text-gray-900">${report.period}</div>
+                                <div class="text-sm text-gray-600">Health Score: ${report.score}/100</div>
+                            </div>
+                            <i class="fas ${trendIcon}"></i>
+                        </div>
+                    `;
+                });
+                reportsHtml += '</div>';
+                
+                // Show in modal
+                const modal = document.createElement('div');
+                modal.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50';
+                modal.innerHTML = `
+                    <div class="bg-white rounded-xl p-6 max-w-md w-full mx-4">
+                        <h3 class="text-xl font-semibold text-gray-900 mb-4">Historical Reports</h3>
+                        ${reportsHtml}
+                        <button onclick="this.closest('.fixed').remove()" class="w-full mt-6 bg-gray-300 text-gray-700 py-2 px-4 rounded-lg hover:bg-gray-400 transition-colors">
+                            Close
+                        </button>
+                    </div>
+                `;
+                document.body.appendChild(modal);
+                
+                notificationSystem.show('Historical reports loaded successfully!', 'success');
+            }, 2000);
+        }
+
+        // Initialize weekly report on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            // Generate initial weekly summary
+            setTimeout(() => {
+                generateWeeklyReport();
+            }, 1000);
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,823 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Health Assistant - Healthy Nation</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+        }
+        
+        .chat-container {
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+            height: 70vh;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .chat-header {
+            background: linear-gradient(135deg, #2563eb 0%, #0891b2 100%);
+            color: white;
+            padding: 1rem;
+            border-radius: 16px 16px 0 0;
+        }
+        
+        .chat-messages {
+            flex: 1;
+            overflow-y: auto;
+            padding: 1rem;
+            space-y: 1rem;
+        }
+        
+        .message {
+            margin-bottom: 1rem;
+            animation: messageSlide 0.3s ease-out;
+        }
+        
+        .message.user {
+            text-align: right;
+        }
+        
+        .message.ai {
+            text-align: left;
+        }
+        
+        .message-bubble {
+            display: inline-block;
+            max-width: 80%;
+            padding: 0.75rem 1rem;
+            border-radius: 1rem;
+            word-wrap: break-word;
+        }
+        
+        .message.user .message-bubble {
+            background: linear-gradient(135deg, #2563eb 0%, #0891b2 100%);
+            color: white;
+            border-bottom-right-radius: 0.25rem;
+        }
+        
+        .message.ai .message-bubble {
+            background: #f1f5f9;
+            color: #1e293b;
+            border-bottom-left-radius: 0.25rem;
+        }
+        
+        .typing-indicator {
+            display: none;
+            padding: 0.75rem 1rem;
+            background: #f1f5f9;
+            border-radius: 1rem;
+            border-bottom-left-radius: 0.25rem;
+            margin-bottom: 1rem;
+        }
+        
+        .typing-dots {
+            display: flex;
+            space-x: 0.25rem;
+        }
+        
+        .typing-dot {
+            width: 0.5rem;
+            height: 0.5rem;
+            background: #6b7280;
+            border-radius: 50%;
+            animation: typing 1.4s infinite ease-in-out;
+        }
+        
+        .typing-dot:nth-child(1) { animation-delay: -0.32s; }
+        .typing-dot:nth-child(2) { animation-delay: -0.16s; }
+        
+        @keyframes typing {
+            0%, 80%, 100% { transform: scale(0); opacity: 0.5; }
+            40% { transform: scale(1); opacity: 1; }
+        }
+        
+        @keyframes messageSlide {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .symptom-card {
+            background: white;
+            border-radius: 12px;
+            border: 2px solid #e5e7eb;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+        
+        .symptom-card:hover {
+            border-color: #2563eb;
+            transform: translateY(-2px);
+            box-shadow: 0 8px 16px rgba(37, 99, 235, 0.1);
+        }
+        
+        .symptom-card.selected {
+            border-color: #2563eb;
+            background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%);
+        }
+        
+        .severity-slider {
+            -webkit-appearance: none;
+            appearance: none;
+            height: 8px;
+            border-radius: 4px;
+            background: linear-gradient(90deg, #059669 0%, #d97706 50%, #dc2626 100%);
+            outline: none;
+        }
+        
+        .severity-slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: white;
+            border: 3px solid #2563eb;
+            cursor: pointer;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+        }
+        
+        .severity-slider::-moz-range-thumb {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: white;
+            border: 3px solid #2563eb;
+            cursor: pointer;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+        }
+        
+        .ai-response-card {
+            background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+            border-radius: 16px;
+            border: 1px solid #e2e8f0;
+        }
+        
+        .confidence-bar {
+            height: 8px;
+            border-radius: 4px;
+            background: linear-gradient(90deg, #dc2626 0%, #d97706 50%, #059669 100%);
+            transition: width 1s ease-in-out;
+        }
+        
+        .bottom-nav {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-top: 1px solid rgba(0, 0, 0, 0.1);
+        }
+        
+        .nav-item {
+            transition: all 0.3s ease;
+        }
+        
+        .nav-item.active {
+            color: #2563eb;
+        }
+        
+        .nav-item:hover {
+            color: #2563eb;
+            transform: translateY(-2px);
+        }
+        
+        .quick-action-chip {
+            background: white;
+            border: 1px solid #e5e7eb;
+            border-radius: 20px;
+            padding: 0.5rem 1rem;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+        
+        .quick-action-chip:hover {
+            border-color: #2563eb;
+            background: #eff6ff;
+            transform: translateY(-1px);
+        }
+        
+        .disclaimer-box {
+            background: #fffbeb;
+            border: 1px solid #fed7aa;
+            border-radius: 12px;
+            padding: 1rem;
+            margin-top: 1rem;
+        }
+        
+        .severity-indicator {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            margin-right: 0.5rem;
+        }
+        
+        .severity-low { background: #059669; }
+        .severity-moderate { background: #d97706; }
+        .severity-high { background: #dc2626; }
+    </style>
+</head>
+<body class="min-h-screen pb-20">
+    <!-- Header -->
+    <header class="bg-white shadow-sm border-b border-gray-200">
+        <div class="max-w-7xl mx-auto px-4 py-4">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center space-x-3">
+                    <button onclick="window.location.href='index.html'" class="p-2 hover:bg-gray-100 rounded-lg transition-colors">
+                        <i class="fas fa-arrow-left text-gray-600"></i>
+                    </button>
+                    <div>
+                        <h1 class="text-xl font-bold text-gray-900">AI Health Assistant</h1>
+                        <p class="text-sm text-gray-600">Smart health guidance</p>
+                    </div>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <button class="p-2 text-gray-600 hover:text-blue-600 transition-colors" onclick="clearChat()">
+                        <i class="fas fa-trash text-xl"></i>
+                    </button>
+                    <button class="p-2 text-gray-600 hover:text-blue-600 transition-colors">
+                        <i class="fas fa-info-circle text-xl"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="max-w-7xl mx-auto px-4 py-6">
+        <!-- Symptom Selection Interface -->
+        <section class="slide-in mb-6">
+            <h2 class="text-xl font-semibold text-gray-900 mb-4">How are you feeling today?</h2>
+            <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 mb-6">
+                <div class="symptom-card p-4 text-center" data-symptom="fever">
+                    <div class="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-3">
+                        <i class="fas fa-thermometer-full text-red-500 text-xl"></i>
+                    </div>
+                    <h3 class="font-semibold text-gray-900">Fever</h3>
+                    <p class="text-sm text-gray-600">High temperature</p>
+                </div>
+
+                <div class="symptom-card p-4 text-center" data-symptom="headache">
+                    <div class="w-12 h-12 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-3">
+                        <i class="fas fa-head-side-virus text-purple-500 text-xl"></i>
+                    </div>
+                    <h3 class="font-semibold text-gray-900">Headache</h3>
+                    <p class="text-sm text-gray-600">Pain in head</p>
+                </div>
+
+                <div class="symptom-card p-4 text-center" data-symptom="cough">
+                    <div class="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-3">
+                        <i class="fas fa-lungs text-blue-500 text-xl"></i>
+                    </div>
+                    <h3 class="font-semibold text-gray-900">Cough</h3>
+                    <p class="text-sm text-gray-600">Persistent cough</p>
+                </div>
+
+                <div class="symptom-card p-4 text-center" data-symptom="chest-pain">
+                    <div class="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-3">
+                        <i class="fas fa-heart text-red-500 text-xl"></i>
+                    </div>
+                    <h3 class="font-semibold text-gray-900">Chest Pain</h3>
+                    <p class="text-sm text-gray-600">Chest discomfort</p>
+                </div>
+
+                <div class="symptom-card p-4 text-center" data-symptom="fatigue">
+                    <div class="w-12 h-12 bg-yellow-100 rounded-full flex items-center justify-center mx-auto mb-3">
+                        <i class="fas fa-battery-quarter text-yellow-500 text-xl"></i>
+                    </div>
+                    <h3 class="font-semibold text-gray-900">Fatigue</h3>
+                    <p class="text-sm text-gray-600">Feeling tired</p>
+                </div>
+
+                <div class="symptom-card p-4 text-center" data-symptom="nausea">
+                    <div class="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-3">
+                        <i class="fas fa-dizzy text-green-500 text-xl"></i>
+                    </div>
+                    <h3 class="font-semibold text-gray-900">Nausea</h3>
+                    <p class="text-sm text-gray-600">Feeling sick</p>
+                </div>
+
+                <div class="symptom-card p-4 text-center" data-symptom="back-pain">
+                    <div class="w-12 h-12 bg-indigo-100 rounded-full flex items-center justify-center mx-auto mb-3">
+                        <i class="fas fa-user-injured text-indigo-500 text-xl"></i>
+                    </div>
+                    <h3 class="font-semibold text-gray-900">Back Pain</h3>
+                    <p class="text-sm text-gray-600">Spinal discomfort</p>
+                </div>
+
+                <div class="symptom-card p-4 text-center" data-symptom="sore-throat">
+                    <div class="w-12 h-12 bg-teal-100 rounded-full flex items-center justify-center mx-auto mb-3">
+                        <i class="fas fa-head-side-cough text-teal-500 text-xl"></i>
+                    </div>
+                    <h3 class="font-semibold text-gray-900">Sore Throat</h3>
+                    <p class="text-sm text-gray-600">Throat irritation</p>
+                </div>
+            </div>
+
+            <!-- Severity and Duration Input -->
+            <div id="symptom-details" class="hidden bg-white p-6 rounded-xl shadow-md">
+                <h3 class="text-lg font-semibold text-gray-900 mb-4">Tell us more about your symptoms</h3>
+                
+                <div class="mb-6">
+                    <label class="block text-sm font-medium text-gray-700 mb-3">How severe are your symptoms?</label>
+                    <div class="flex items-center space-x-4">
+                        <span class="text-sm text-gray-600">Mild</span>
+                        <input type="range" id="severity-slider" class="severity-slider flex-1" min="1" max="10" value="5">
+                        <span class="text-sm text-gray-600">Severe</span>
+                    </div>
+                    <div class="text-center mt-2">
+                        <span id="severity-value" class="text-lg font-semibold text-gray-900">5/10</span>
+                    </div>
+                </div>
+
+                <div class="mb-6">
+                    <label class="block text-sm font-medium text-gray-700 mb-3">How long have you been experiencing these symptoms?</label>
+                    <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+                        <button class="duration-btn p-3 border border-gray-300 rounded-lg text-center hover:border-blue-500 hover:bg-blue-50 transition-colors" data-duration="few-hours">
+                            <div class="font-medium">Few Hours</div>
+                            <div class="text-sm text-gray-600">Today</div>
+                        </button>
+                        <button class="duration-btn p-3 border border-gray-300 rounded-lg text-center hover:border-blue-500 hover:bg-blue-50 transition-colors" data-duration="1-2-days">
+                            <div class="font-medium">1-2 Days</div>
+                            <div class="text-sm text-gray-600">Recently</div>
+                        </button>
+                        <button class="duration-btn p-3 border border-gray-300 rounded-lg text-center hover:border-blue-500 hover:bg-blue-50 transition-colors" data-duration="few-days">
+                            <div class="font-medium">Few Days</div>
+                            <div class="text-sm text-gray-600">This week</div>
+                        </button>
+                        <button class="duration-btn p-3 border border-gray-300 rounded-lg text-center hover:border-blue-500 hover:bg-blue-50 transition-colors" data-duration="week-plus">
+                            <div class="font-medium">Week+</div>
+                            <div class="text-sm text-gray-600">Ongoing</div>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="mb-6">
+                    <label class="block text-sm font-medium text-gray-700 mb-3">Additional description (optional)</label>
+                    <textarea id="symptom-description" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500" rows="3" placeholder="Describe your symptoms in more detail..."></textarea>
+                </div>
+
+                <div class="flex space-x-4">
+                    <button id="analyze-symptoms" class="flex-1 bg-blue-600 text-white py-3 px-6 rounded-lg font-semibold hover:bg-blue-700 transition-colors">
+                        <i class="fas fa-brain mr-2"></i>Analyze Symptoms
+                    </button>
+                    <button id="attach-vitals" class="bg-gray-100 text-gray-700 py-3 px-6 rounded-lg font-semibold hover:bg-gray-200 transition-colors">
+                        <i class="fas fa-heartbeat mr-2"></i>Attach Vitals
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <!-- AI Chat Interface -->
+        <section class="slide-in">
+            <div class="chat-container">
+                <div class="chat-header">
+                    <div class="flex items-center space-x-3">
+                        <div class="w-10 h-10 bg-white bg-opacity-20 rounded-full flex items-center justify-center">
+                            <i class="fas fa-robot text-xl"></i>
+                        </div>
+                        <div>
+                            <h3 class="font-semibold">Dr. AI Assistant</h3>
+                            <p class="text-sm text-blue-100">Available 24/7</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="ai-chat-container" class="chat-messages">
+                    <!-- Welcome message -->
+                    <div class="message ai">
+                        <div class="message-bubble">
+                            <p class="mb-2">Hello! I'm your AI health assistant. I'm here to help you understand your symptoms and provide guidance.</p>
+                            <p class="text-sm text-gray-600">Please select your symptoms above to get started, or type your question below.</p>
+                        </div>
+                    </div>
+
+                    <!-- Quick action chips -->
+                    <div class="flex flex-wrap gap-2 mb-4">
+                        <div class="quick-action-chip" onclick="quickAction('emergency')">
+                            <i class="fas fa-exclamation-triangle text-red-500 mr-2"></i>Emergency Help
+                        </div>
+                        <div class="quick-action-chip" onclick="quickAction('medication')">
+                            <i class="fas fa-pills text-blue-500 mr-2"></i>Medication Info
+                        </div>
+                        <div class="quick-action-chip" onclick="quickAction('appointment')">
+                            <i class="fas fa-calendar-plus text-green-500 mr-2"></i>Book Appointment
+                        </div>
+                        <div class="quick-action-chip" onclick="quickAction('vitals')">
+                            <i class="fas fa-heartbeat text-purple-500 mr-2"></i>Check Vitals
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Typing indicator -->
+                <div id="typing-indicator" class="typing-indicator">
+                    <div class="typing-dots">
+                        <div class="typing-dot"></div>
+                        <div class="typing-dot"></div>
+                        <div class="typing-dot"></div>
+                    </div>
+                    <span class="ml-2 text-sm text-gray-600">AI is thinking...</span>
+                </div>
+
+                <!-- Chat Input -->
+                <div class="p-4 border-t border-gray-200">
+                    <div class="flex space-x-3">
+                        <input type="text" id="chat-input" class="flex-1 p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500" placeholder="Type your message...">
+                        <button id="send-message" class="bg-blue-600 text-white p-3 rounded-lg hover:bg-blue-700 transition-colors">
+                            <i class="fas fa-paper-plane"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- AI Response Display -->
+        <section id="ai-response-section" class="slide-in hidden">
+            <div class="ai-response-card p-6">
+                <div class="flex items-center justify-between mb-4">
+                    <h3 class="text-lg font-semibold text-gray-900">AI Analysis</h3>
+                    <div class="flex items-center space-x-2">
+                        <span class="text-sm text-gray-600">Confidence:</span>
+                        <div class="w-20 h-2 bg-gray-200 rounded-full">
+                            <div id="confidence-bar" class="confidence-bar" style="width: 0%"></div>
+                        </div>
+                        <span id="confidence-text" class="text-sm font-medium text-gray-900">0%</span>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <!-- Possible Causes -->
+                    <div>
+                        <h4 class="font-semibold text-gray-900 mb-3 flex items-center">
+                            <i class="fas fa-search text-blue-500 mr-2"></i>Possible Causes
+                        </h4>
+                        <ul id="possible-causes" class="space-y-2">
+                            <!-- Populated by JavaScript -->
+                        </ul>
+                    </div>
+
+                    <!-- Recommendations -->
+                    <div>
+                        <h4 class="font-semibold text-gray-900 mb-3 flex items-center">
+                            <i class="fas fa-lightbulb text-yellow-500 mr-2"></i>Recommendations
+                        </h4>
+                        <ul id="recommendations" class="space-y-2">
+                            <!-- Populated by JavaScript -->
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Next Steps -->
+                <div class="mt-6">
+                    <h4 class="font-semibold text-gray-900 mb-3 flex items-center">
+                        <i class="fas fa-arrow-right text-green-500 mr-2"></i>Next Steps
+                    </h4>
+                    <div id="next-steps" class="space-y-2">
+                        <!-- Populated by JavaScript -->
+                    </div>
+                </div>
+
+                <!-- Action Buttons -->
+                <div class="flex flex-wrap gap-3 mt-6">
+                    <button onclick="window.location.href='doctors.html'" class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors">
+                        <i class="fas fa-user-md mr-2"></i>Book Doctor
+                    </button>
+                    <button onclick="window.location.href='health.html'" class="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors">
+                        <i class="fas fa-heartbeat mr-2"></i>Check Vitals
+                    </button>
+                    <button onclick="emergencySystem.triggerEmergency()" class="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 transition-colors">
+                        <i class="fas fa-exclamation-triangle mr-2"></i>Emergency
+                    </button>
+                    <button id="share-analysis" class="bg-gray-600 text-white px-4 py-2 rounded-lg hover:bg-gray-700 transition-colors">
+                        <i class="fas fa-share mr-2"></i>Share
+                    </button>
+                </div>
+
+                <!-- Disclaimer -->
+                <div class="disclaimer-box">
+                    <div class="flex items-start space-x-2">
+                        <i class="fas fa-exclamation-triangle text-yellow-600 mt-1"></i>
+                        <div>
+                            <h5 class="font-semibold text-yellow-800 mb-1">Medical Disclaimer</h5>
+                            <p id="disclaimer-text" class="text-sm text-yellow-700">
+                                This analysis is for informational purposes only and does not constitute medical advice. 
+                                Please consult with a qualified healthcare professional for proper medical diagnosis and treatment.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Emergency FAB -->
+    <button onclick="emergencySystem.triggerEmergency()" class="fixed bottom-24 right-6 w-14 h-14 bg-red-600 text-white rounded-full shadow-lg flex items-center justify-center z-40 hover:bg-red-700 transition-colors">
+        <i class="fas fa-exclamation text-xl"></i>
+    </button>
+
+    <!-- Bottom Navigation -->
+    <nav class="bottom-nav fixed bottom-0 left-0 right-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 py-3">
+            <div class="flex justify-around items-center">
+                <a href="index.html" class="nav-item flex flex-col items-center space-y-1 text-gray-600">
+                    <i class="fas fa-home text-xl"></i>
+                    <span class="text-xs font-medium">Home</span>
+                </a>
+                <a href="health.html" class="nav-item flex flex-col items-center space-y-1 text-gray-600">
+                    <i class="fas fa-heartbeat text-xl"></i>
+                    <span class="text-xs font-medium">Health</span>
+                </a>
+                <a href="assistant.html" class="nav-item active flex flex-col items-center space-y-1">
+                    <i class="fas fa-robot text-xl"></i>
+                    <span class="text-xs font-medium">Assistant</span>
+                </a>
+                <a href="doctors.html" class="nav-item flex flex-col items-center space-y-1 text-gray-600">
+                    <i class="fas fa-user-md text-xl"></i>
+                    <span class="text-xs font-medium">Doctors</span>
+                </a>
+                <a href="profile.html" class="nav-item flex flex-col items-center space-y-1 text-gray-600">
+                    <i class="fas fa-user text-xl"></i>
+                    <span class="text-xs font-medium">Profile</span>
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Scripts -->
+    <script src="main.js"></script>
+    <script>
+        let selectedSymptoms = [];
+        let selectedDuration = '';
+        let selectedSeverity = 5;
+
+        // Initialize page
+        document.addEventListener('DOMContentLoaded', function() {
+            setupSymptomSelection();
+            setupSeveritySlider();
+            setupDurationButtons();
+            setupChatInterface();
+        });
+
+        function setupSymptomSelection() {
+            document.querySelectorAll('.symptom-card').forEach(card => {
+                card.addEventListener('click', function() {
+                    const symptom = this.dataset.symptom;
+                    
+                    if (this.classList.contains('selected')) {
+                        this.classList.remove('selected');
+                        selectedSymptoms = selectedSymptoms.filter(s => s !== symptom);
+                    } else {
+                        this.classList.add('selected');
+                        selectedSymptoms.push(symptom);
+                    }
+                    
+                    updateSymptomDetailsVisibility();
+                });
+            });
+        }
+
+        function updateSymptomDetailsVisibility() {
+            const detailsSection = document.getElementById('symptom-details');
+            if (selectedSymptoms.length > 0) {
+                detailsSection.classList.remove('hidden');
+                anime({
+                    targets: detailsSection,
+                    opacity: [0, 1],
+                    translateY: [20, 0],
+                    duration: 500,
+                    easing: 'easeOutQuart'
+                });
+            } else {
+                detailsSection.classList.add('hidden');
+            }
+        }
+
+        function setupSeveritySlider() {
+            const slider = document.getElementById('severity-slider');
+            const valueDisplay = document.getElementById('severity-value');
+            
+            slider.addEventListener('input', function() {
+                selectedSeverity = parseInt(this.value);
+                valueDisplay.textContent = `${selectedSeverity}/10`;
+            });
+        }
+
+        function setupDurationButtons() {
+            document.querySelectorAll('.duration-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    document.querySelectorAll('.duration-btn').forEach(b => {
+                        b.classList.remove('border-blue-500', 'bg-blue-50');
+                        b.classList.add('border-gray-300');
+                    });
+                    
+                    this.classList.remove('border-gray-300');
+                    this.classList.add('border-blue-500', 'bg-blue-50');
+                    selectedDuration = this.dataset.duration;
+                });
+            });
+        }
+
+        function setupChatInterface() {
+            const chatInput = document.getElementById('chat-input');
+            const sendButton = document.getElementById('send-message');
+            
+            sendButton.addEventListener('click', sendMessage);
+            chatInput.addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    sendMessage();
+                }
+            });
+            
+            document.getElementById('analyze-symptoms').addEventListener('click', analyzeSymptoms);
+            document.getElementById('attach-vitals').addEventListener('click', attachVitals);
+        }
+
+        function sendMessage() {
+            const input = document.getElementById('chat-input');
+            const message = input.value.trim();
+            
+            if (!message) return;
+            
+            addChatMessage(message, 'user');
+            input.value = '';
+            
+            // Simulate AI response
+            showTypingIndicator();
+            setTimeout(() => {
+                hideTypingIndicator();
+                const aiResponse = generateAIResponse(message);
+                addChatMessage(aiResponse, 'ai');
+            }, 2000);
+        }
+
+        function addChatMessage(message, sender) {
+            const container = document.getElementById('ai-chat-container');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${sender}`;
+            
+            messageDiv.innerHTML = `
+                <div class="message-bubble">
+                    <p>${message}</p>
+                </div>
+            `;
+            
+            container.appendChild(messageDiv);
+            container.scrollTop = container.scrollHeight;
+        }
+
+        function showTypingIndicator() {
+            document.getElementById('typing-indicator').style.display = 'block';
+            document.getElementById('ai-chat-container').scrollTop = document.getElementById('ai-chat-container').scrollHeight;
+        }
+
+        function hideTypingIndicator() {
+            document.getElementById('typing-indicator').style.display = 'none';
+        }
+
+        function generateAIResponse(message) {
+            const responses = {
+                'hello': 'Hello! How can I help you with your health today?',
+                'emergency': 'If this is a medical emergency, please call 911 immediately or go to your nearest emergency room.',
+                'medication': 'I can help you with medication information. Please tell me what medication you\'re asking about.',
+                'appointment': 'I can help you book an appointment. What type of doctor do you need to see?',
+                'vitals': 'Your current vitals look good: Heart rate 72 bpm, Blood pressure 120/80, SpO2 98%. Would you like to see more details?'
+            };
+            
+            const lowerMessage = message.toLowerCase();
+            return responses[lowerMessage] || "I understand you're asking about " + lowerMessage + ". Could you provide more details about your symptoms so I can give you a better assessment?";
+        }
+
+        function analyzeSymptoms() {
+            if (selectedSymptoms.length === 0) {
+                notificationSystem.show('Please select at least one symptom', 'warning');
+                return;
+            }
+            
+            showTypingIndicator();
+            
+            // Simulate AI processing
+            setTimeout(async () => {
+                const context = {
+                    symptoms: selectedSymptoms,
+                    severity: selectedSeverity,
+                    duration: selectedDuration,
+                    description: document.getElementById('symptom-description').value
+                };
+                
+                const response = await aiAssistant.processSymptoms(selectedSymptoms, context);
+                displayAIResponse(response);
+                hideTypingIndicator();
+            }, 3000);
+        }
+
+        function displayAIResponse(response) {
+            const responseSection = document.getElementById('ai-response-section');
+            responseSection.classList.remove('hidden');
+            
+            // Animate in
+            anime({
+                targets: responseSection,
+                opacity: [0, 1],
+                translateY: [30, 0],
+                duration: 800,
+                easing: 'easeOutQuart'
+            });
+            
+            // Update content
+            document.getElementById('possible-causes').innerHTML = response.possibleCauses.map(cause => 
+                `<li class="flex items-center space-x-2"><span class="severity-indicator severity-moderate"></span><span>${cause}</span></li>`
+            ).join('');
+            
+            document.getElementById('recommendations').innerHTML = response.recommendations.map(rec => 
+                `<li class="flex items-start space-x-2"><i class="fas fa-check-circle text-green-500 mt-1"></i><span>${rec}</span></li>`
+            ).join('');
+            
+            document.getElementById('next-steps').innerHTML = response.nextSteps.map(step => 
+                `<div class="flex items-center space-x-2"><i class="fas fa-arrow-right text-blue-500"></i><span>${step}</span></div>`
+            ).join('');
+            
+            // Update confidence
+            const confidence = response.confidence || 85;
+            document.getElementById('confidence-text').textContent = `${confidence}%`;
+            document.getElementById('confidence-bar').style.width = `${confidence}%`;
+            
+            // Add response to chat
+            const chatResponse = `Based on your symptoms (${selectedSymptoms.join(', ')}), here's my analysis:\n\nPossible causes: ${response.possibleCauses.join(', ')}\n\nConfidence level: ${confidence}%`;
+            addChatMessage(chatResponse, 'ai');
+        }
+
+        function attachVitals() {
+            const vitals = backend.getVitals();
+            const vitalInfo = `Current vitals:\n- Heart Rate: ${vitals.heartRate.current} bpm\n- Blood Pressure: ${vitals.bloodPressure.systolic}/${vitals.bloodPressure.diastolic} mmHg\n- SpO2: ${vitals.spO2.current}%\n- Temperature: 98.6°F`;
+            
+            addChatMessage(vitalInfo, 'user');
+            notificationSystem.show('Vitals attached to analysis', 'success');
+        }
+
+        function quickAction(action) {
+            switch(action) {
+                case 'emergency':
+                    emergencySystem.triggerEmergency();
+                    break;
+                case 'medication':
+                    addChatMessage('I need help with medication information', 'user');
+                    break;
+                case 'appointment':
+                    window.location.href = 'doctors.html';
+                    break;
+                case 'vitals':
+                    window.location.href = 'health.html';
+                    break;
+            }
+        }
+
+        function clearChat() {
+            const container = document.getElementById('ai-chat-container');
+            container.innerHTML = `
+                <div class="message ai">
+                    <div class="message-bubble">
+                        <p class="mb-2">Hello! I'm your AI health assistant. I'm here to help you understand your symptoms and provide guidance.</p>
+                        <p class="text-sm text-gray-600">Please select your symptoms above to get started, or type your question below.</p>
+                    </div>
+                </div>
+                <div class="flex flex-wrap gap-2 mb-4">
+                    <div class="quick-action-chip" onclick="quickAction('emergency')">
+                        <i class="fas fa-exclamation-triangle text-red-500 mr-2"></i>Emergency Help
+                    </div>
+                    <div class="quick-action-chip" onclick="quickAction('medication')">
+                        <i class="fas fa-pills text-blue-500 mr-2"></i>Medication Info
+                    </div>
+                    <div class="quick-action-chip" onclick="quickAction('appointment')">
+                        <i class="fas fa-calendar-plus text-green-500 mr-2"></i>Book Appointment
+                    </div>
+                    <div class="quick-action-chip" onclick="quickAction('vitals')">
+                        <i class="fas fa-heartbeat text-purple-500 mr-2"></i>Check Vitals
+                    </div>
+                </div>
+            `;
+            
+            document.getElementById('ai-response-section').classList.add('hidden');
+            selectedSymptoms = [];
+            selectedDuration = '';
+            selectedSeverity = 5;
+            
+            // Reset UI
+            document.querySelectorAll('.symptom-card').forEach(card => card.classList.remove('selected'));
+            document.querySelectorAll('.duration-btn').forEach(btn => btn.classList.remove('border-blue-500', 'bg-blue-50'));
+            document.getElementById('severity-slider').value = 5;
+            document.getElementById('severity-value').textContent = '5/10';
+            document.getElementById('symptom-description').value = '';
+            document.getElementById('symptom-details').classList.add('hidden');
+            
+            notificationSystem.show('Chat cleared', 'info');
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,1540 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Medicine Delivery - Healthy Nation</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+        }
+        
+        .delivery-card {
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+            transition: all 0.3s ease;
+            border: 2px solid transparent;
+            overflow: hidden;
+        }
+        
+        .delivery-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+            border-color: #2563eb;
+        }
+        
+        .pharmacy-card {
+            background: white;
+            border-radius: 12px;
+            border: 2px solid #e5e7eb;
+            transition: all 0.3s ease;
+        }
+        
+        .pharmacy-card:hover {
+            border-color: #059669;
+            transform: translateY(-1px);
+        }
+        
+        .order-card {
+            background: white;
+            border-radius: 12px;
+            border: 2px solid #e5e7eb;
+            transition: all 0.3s ease;
+        }
+        
+        .order-card:hover {
+            border-color: #2563eb;
+            transform: translateY(-1px);
+        }
+        
+        .tracking-step {
+            position: relative;
+            text-align: center;
+        }
+        
+        .tracking-step::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            right: -50%;
+            width: 100%;
+            height: 2px;
+            background: #e5e7eb;
+            transform: translateY(-50%);
+        }
+        
+        .tracking-step:last-child::after {
+            display: none;
+        }
+        
+        .tracking-step.completed::after {
+            background: #059669;
+        }
+        
+        .tracking-dot {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            background: #e5e7eb;
+            margin: 0 auto 0.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            z-index: 1;
+        }
+        
+        .tracking-dot.completed {
+            background: #059669;
+            color: white;
+        }
+        
+        .tracking-dot.active {
+            background: #2563eb;
+            color: white;
+            animation: pulse 2s infinite;
+        }
+        
+        .modal-overlay {
+            background: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(4px);
+        }
+        
+        .modal-content {
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+        
+        .bottom-nav {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-top: 1px solid rgba(0, 0, 0, 0.1);
+        }
+        
+        .nav-item {
+            transition: all 0.3s ease;
+        }
+        
+        .nav-item.active {
+            color: #2563eb;
+        }
+        
+        .nav-item:hover {
+            color: #2563eb;
+            transform: translateY(-2px);
+        }
+        
+        .floating-animation {
+            animation: float 6s ease-in-out infinite;
+        }
+        
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+        }
+        
+        .search-bar {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+        }
+        
+        .status-badge {
+            padding: 0.25rem 0.75rem;
+            border-radius: 9999px;
+            font-size: 0.75rem;
+            font-weight: 500;
+        }
+        
+        .status-pending { background: #fffbeb; color: #d97706; }
+        .status-confirmed { background: #ecfdf5; color: #059669; }
+        .status-preparing { background: #eff6ff; color: #2563eb; }
+        .status-shipped { background: #f3e8ff; color: #7c3aed; }
+        .status-delivered { background: #ecfdf5; color: #059669; }
+        .status-cancelled { background: #fef2f2; color: #dc2626; }
+        
+        .delivery-progress {
+            height: 8px;
+            background: #e5e7eb;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+        
+        .delivery-progress-bar {
+            height: 100%;
+            background: linear-gradient(90deg, #2563eb 0%, #059669 100%);
+            transition: width 1s ease-in-out;
+        }
+    </style>
+</head>
+<body class="min-h-screen pb-20">
+    <!-- Header -->
+    <header class="bg-white shadow-sm border-b border-gray-200">
+        <div class="max-w-7xl mx-auto px-4 py-4">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center space-x-3">
+                    <button onclick="window.location.href='index.html'" class="p-2 hover:bg-gray-100 rounded-lg transition-colors">
+                        <i class="fas fa-arrow-left text-gray-600"></i>
+                    </button>
+                    <div>
+                        <h1 class="text-xl font-bold text-gray-900">Medicine Delivery</h1>
+                        <p class="text-sm text-gray-600">Fast & reliable delivery</p>
+                    </div>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <button onclick="showCart()" class="relative p-2 text-gray-600 hover:text-blue-600 transition-colors">
+                        <i class="fas fa-shopping-cart text-xl"></i>
+                        <span class="absolute -top-1 -right-1 w-5 h-5 bg-red-500 text-white text-xs rounded-full flex items-center justify-center">3</span>
+                    </button>
+                    <button onclick="showOrders()" class="p-2 text-gray-600 hover:text-blue-600 transition-colors">
+                        <i class="fas fa-list text-xl"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="max-w-7xl mx-auto px-4 py-6">
+        <!-- Location & Search -->
+        <section class="slide-in mb-8">
+            <div class="search-bar p-4 mb-6">
+                <div class="flex items-center space-x-4 mb-4">
+                    <i class="fas fa-map-marker-alt text-gray-400 text-xl"></i>
+                    <div class="flex-1">
+                        <p class="font-medium text-gray-900">Delivery Location</p>
+                        <p class="text-sm text-gray-600">123 Main Street, Apt 4B</p>
+                    </div>
+                    <button onclick="changeLocation()" class="text-blue-600 text-sm hover:underline">
+                        <i class="fas fa-edit mr-1"></i>Change
+                    </button>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <i class="fas fa-search text-gray-400 text-xl"></i>
+                    <input type="text" id="medicine-search" class="flex-1 outline-none text-gray-700" placeholder="Search medicines, brands, or conditions...">
+                    <button onclick="searchMedicines()" class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors">
+                        Search
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Quick Categories -->
+            <div class="flex flex-wrap gap-3">
+                <button onclick="filterByCategory('prescription')" class="bg-blue-100 text-blue-800 px-4 py-2 rounded-full text-sm font-medium hover:bg-blue-200 transition-colors">
+                    Prescription
+                </button>
+                <button onclick="filterByCategory('otc')" class="bg-green-100 text-green-800 px-4 py-2 rounded-full text-sm font-medium hover:bg-green-200 transition-colors">
+                    Over-the-Counter
+                </button>
+                <button onclick="filterByCategory('vitamins')" class="bg-purple-100 text-purple-800 px-4 py-2 rounded-full text-sm font-medium hover:bg-purple-200 transition-colors">
+                    Vitamins
+                </button>
+                <button onclick="filterByCategory('supplements')" class="bg-orange-100 text-orange-800 px-4 py-2 rounded-full text-sm font-medium hover:bg-orange-200 transition-colors">
+                    Supplements
+                </button>
+            </div>
+        </section>
+
+        <!-- Nearby Pharmacy Module -->
+        <section class="slide-in mb-8">
+            <div class="flex justify-between items-center mb-6">
+                <h2 class="text-xl font-semibold text-gray-900">Nearby Pharmacies</h2>
+                <button onclick="getCurrentLocation()" class="text-blue-600 text-sm hover:underline">
+                    <i class="fas fa-map-marker-alt mr-1"></i>Use Current Location
+                </button>
+            </div>
+            
+            <!-- Location Permission Request -->
+            <div id="location-permission" class="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6 hidden">
+                <div class="flex items-center space-x-3">
+                    <i class="fas fa-location-arrow text-blue-600"></i>
+                    <div class="flex-1">
+                        <h4 class="font-medium text-blue-900">Enable Location Access</h4>
+                        <p class="text-sm text-blue-700">Allow access to find nearby pharmacies and enable delivery services</p>
+                    </div>
+                    <button onclick="requestLocationPermission()" class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors">
+                        Allow
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Pharmacy List with Real-time Info -->
+            <div class="space-y-4">
+                <div class="pharmacy-card p-6" data-pharmacy="healthplus">
+                    <div class="flex items-center justify-between mb-4">
+                        <div class="flex items-center space-x-3">
+                            <div class="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center">
+                                <i class="fas fa-plus text-green-600 text-xl"></i>
+                            </div>
+                            <div>
+                                <h3 class="font-semibold text-lg text-gray-900">HealthPlus Pharmacy</h3>
+                                <p class="text-sm text-gray-600">Verified Pharmacy</p>
+                            </div>
+                        </div>
+                        <div class="text-right">
+                            <div class="text-sm text-green-600 font-medium">Open</div>
+                            <div class="text-xs text-gray-500">Closes in 3 hours</div>
+                        </div>
+                    </div>
+                    
+                    <div class="grid grid-cols-2 gap-4 mb-4">
+                        <div>
+                            <p class="text-sm text-gray-600 mb-1">Distance</p>
+                            <p class="font-semibold text-gray-900">0.8 km away</p>
+                        </div>
+                        <div>
+                            <p class="text-sm text-gray-600 mb-1">Delivery Time</p>
+                            <p class="font-semibold text-gray-900">12-15 min</p>
+                        </div>
+                        <div>
+                            <p class="text-sm text-gray-600 mb-1">Rating</p>
+                            <p class="font-semibold text-gray-900">⭐ 4.8 (1,234)</p>
+                        </div>
+                        <div>
+                            <p class="text-sm text-gray-600 mb-1">Delivery Status</p>
+                            <p class="font-semibold text-green-600">Available</p>
+                        </div>
+                    </div>
+                    
+                    <div class="flex items-center justify-between mb-4">
+                        <div class="flex space-x-2">
+                            <span class="bg-green-100 text-green-800 px-2 py-1 rounded-full text-xs">Free delivery >$25</span>
+                            <span class="bg-blue-100 text-blue-800 px-2 py-1 rounded-full text-xs">Prescription accepted</span>
+                        </div>
+                        <button onclick="viewPharmacyDetails('healthplus')" class="text-blue-600 text-sm hover:underline">
+                            View Details
+                        </button>
+                    </div>
+                    
+                    <div class="flex space-x-3">
+                        <button onclick="uploadPrescription('healthplus')" class="flex-1 bg-green-600 text-white py-2 px-4 rounded-lg hover:bg-green-700 transition-colors">
+                            <i class="fas fa-upload mr-2"></i>Upload Prescription
+                        </button>
+                        <button onclick="selectPharmacy('healthplus')" class="flex-1 bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 transition-colors">
+                            Order Medicines
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="pharmacy-card p-6" data-pharmacy="medcare">
+                    <div class="flex items-center justify-between mb-4">
+                        <div class="flex items-center space-x-3">
+                            <div class="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center">
+                                <i class="fas fa-bolt text-blue-600 text-xl"></i>
+                            </div>
+                            <div>
+                                <h3 class="font-semibold text-lg text-gray-900">MedCare Express</h3>
+                                <p class="text-sm text-gray-600">Express Delivery</p>
+                            </div>
+                        </div>
+                        <div class="text-right">
+                            <div class="text-sm text-green-600 font-medium">Open</div>
+                            <div class="text-xs text-gray-500">24 hours</div>
+                        </div>
+                    </div>
+                    
+                    <div class="grid grid-cols-2 gap-4 mb-4">
+                        <div>
+                            <p class="text-sm text-gray-600 mb-1">Distance</p>
+                            <p class="font-semibold text-gray-900">1.2 km away</p>
+                        </div>
+                        <div>
+                            <p class="text-sm text-gray-600 mb-1">Delivery Time</p>
+                            <p class="font-semibold text-gray-900">8-12 min</p>
+                        </div>
+                        <div>
+                            <p class="text-sm text-gray-600 mb-1">Rating</p>
+                            <p class="font-semibold text-gray-900">⭐ 4.6 (892)</p>
+                        </div>
+                        <div>
+                            <p class="text-sm text-gray-600 mb-1">Delivery Status</p>
+                            <p class="font-semibold text-orange-600">High Demand</p>
+                        </div>
+                    </div>
+                    
+                    <div class="flex items-center justify-between mb-4">
+                        <div class="flex space-x-2">
+                            <span class="bg-orange-100 text-orange-800 px-2 py-1 rounded-full text-xs">Express delivery</span>
+                            <span class="bg-blue-100 text-blue-800 px-2 py-1 rounded-full text-xs">Prescription accepted</span>
+                        </div>
+                        <button onclick="viewPharmacyDetails('medcare')" class="text-blue-600 text-sm hover:underline">
+                            View Details
+                        </button>
+                    </div>
+                    
+                    <div class="flex space-x-3">
+                        <button onclick="uploadPrescription('medcare')" class="flex-1 bg-green-600 text-white py-2 px-4 rounded-lg hover:bg-green-700 transition-colors">
+                            <i class="fas fa-upload mr-2"></i>Upload Prescription
+                        </button>
+                        <button onclick="selectPharmacy('medcare')" class="flex-1 bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 transition-colors">
+                            Order Medicines
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Featured Medicines -->
+        <section class="slide-in mb-8">
+            <div class="flex justify-between items-center mb-6">
+                <h2 class="text-xl font-semibold text-gray-900">Popular Medicines</h2>
+                <button onclick="viewAllMedicines()" class="text-blue-600 text-sm hover:underline">View All</button>
+            </div>
+            
+            <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                <div class="delivery-card p-4 text-center">
+                    <div class="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-3">
+                        <i class="fas fa-pills text-blue-600 text-2xl"></i>
+                    </div>
+                    <h3 class="font-semibold text-gray-900 mb-1">Lisinopril 10mg</h3>
+                    <p class="text-sm text-gray-600 mb-2">Blood pressure medication</p>
+                    <p class="text-lg font-bold text-blue-600 mb-3">$12.99</p>
+                    <button onclick="addToCart('lisinopril')" class="w-full bg-blue-600 text-white py-2 px-3 rounded-lg hover:bg-blue-700 transition-colors text-sm">
+                        Add to Cart
+                    </button>
+                </div>
+
+                <div class="delivery-card p-4 text-center">
+                    <div class="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-3">
+                        <i class="fas fa-capsules text-green-600 text-2xl"></i>
+                    </div>
+                    <h3 class="font-semibold text-gray-900 mb-1">Vitamin D3 2000IU</h3>
+                    <p class="text-sm text-gray-600 mb-2">Daily supplement</p>
+                    <p class="text-lg font-bold text-green-600 mb-3">$8.99</p>
+                    <button onclick="addToCart('vitamin-d')" class="w-full bg-blue-600 text-white py-2 px-3 rounded-lg hover:bg-blue-700 transition-colors text-sm">
+                        Add to Cart
+                    </button>
+                </div>
+
+                <div class="delivery-card p-4 text-center">
+                    <div class="w-16 h-16 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-3">
+                        <i class="fas fa-tablets text-purple-600 text-2xl"></i>
+                    </div>
+                    <h3 class="font-semibold text-gray-900 mb-1">Metformin 500mg</h3>
+                    <p class="text-sm text-gray-600 mb-2">Diabetes medication</p>
+                    <p class="text-lg font-bold text-purple-600 mb-3">$15.99</p>
+                    <button onclick="addToCart('metformin')" class="w-full bg-blue-600 text-white py-2 px-3 rounded-lg hover:bg-blue-700 transition-colors text-sm">
+                        Add to Cart
+                    </button>
+                </div>
+
+                <div class="delivery-card p-4 text-center">
+                    <div class="w-16 h-16 bg-orange-100 rounded-full flex items-center justify-center mx-auto mb-3">
+                        <i class="fas fa-prescription-bottle text-orange-600 text-2xl"></i>
+                    </div>
+                    <h3 class="font-semibold text-gray-900 mb-1">Ibuprofen 200mg</h3>
+                    <p class="text-sm text-gray-600 mb-2">Pain relief</p>
+                    <p class="text-lg font-bold text-orange-600 mb-3">$6.99</p>
+                    <button onclick="addToCart('ibuprofen')" class="w-full bg-blue-600 text-white py-2 px-3 rounded-lg hover:bg-blue-700 transition-colors text-sm">
+                        Add to Cart
+                    </button>
+                </div>
+
+                <div class="delivery-card p-4 text-center">
+                    <div class="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-3">
+                        <i class="fas fa-heartbeat text-red-600 text-2xl"></i>
+                    </div>
+                    <h3 class="font-semibold text-gray-900 mb-1">Atorvastatin 20mg</h3>
+                    <p class="text-sm text-gray-600 mb-2">Cholesterol medication</p>
+                    <p class="text-lg font-bold text-red-600 mb-3">$18.99</p>
+                    <button onclick="addToCart('atorvastatin')" class="w-full bg-blue-600 text-white py-2 px-3 rounded-lg hover:bg-blue-700 transition-colors text-sm">
+                        Add to Cart
+                    </button>
+                </div>
+
+                <div class="delivery-card p-4 text-center">
+                    <div class="w-16 h-16 bg-teal-100 rounded-full flex items-center justify-center mx-auto mb-3">
+                        <i class="fas fa-syringe text-teal-600 text-2xl"></i>
+                    </div>
+                    <h3 class="font-semibold text-gray-900 mb-1">Insulin Pen</h3>
+                    <p class="text-sm text-gray-600 mb-2">Diabetes injection</p>
+                    <p class="text-lg font-bold text-teal-600 mb-3">$45.99</p>
+                    <button onclick="addToCart('insulin')" class="w-full bg-blue-600 text-white py-2 px-3 rounded-lg hover:bg-blue-700 transition-colors text-sm">
+                        Add to Cart
+                    </button>
+                </div>
+
+                <div class="delivery-card p-4 text-center">
+                    <div class="w-16 h-16 bg-indigo-100 rounded-full flex items-center justify-center mx-auto mb-3">
+                        <i class="fas fa-lungs text-indigo-600 text-2xl"></i>
+                    </div>
+                    <h3 class="font-semibold text-gray-900 mb-1">Albuterol Inhaler</h3>
+                    <p class="text-sm text-gray-600 mb-2">Asthma medication</p>
+                    <p class="text-lg font-bold text-indigo-600 mb-3">$25.99</p>
+                    <button onclick="addToCart('albuterol')" class="w-full bg-blue-600 text-white py-2 px-3 rounded-lg hover:bg-blue-700 transition-colors text-sm">
+                        Add to Cart
+                    </button>
+                </div>
+
+                <div class="delivery-card p-4 text-center">
+                    <div class="w-16 h-16 bg-pink-100 rounded-full flex items-center justify-center mx-auto mb-3">
+                        <i class="fas fa-brain text-pink-600 text-2xl"></i>
+                    </div>
+                    <h3 class="font-semibold text-gray-900 mb-1">Sertraline 50mg</h3>
+                    <p class="text-sm text-gray-600 mb-2">Antidepressant</p>
+                    <p class="text-lg font-bold text-pink-600 mb-3">$22.99</p>
+                    <button onclick="addToCart('sertraline')" class="w-full bg-blue-600 text-white py-2 px-3 rounded-lg hover:bg-blue-700 transition-colors text-sm">
+                        Add to Cart
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <!-- Popular Medicines -->
+        <section class="slide-in mb-8">
+            <div class="flex justify-between items-center mb-6">
+                <h2 class="text-xl font-semibold text-gray-900">Popular Medicines</h2>
+                <button onclick="viewAllMedicines()" class="text-blue-600 text-sm hover:underline">View All</button>
+            </div>
+            
+            <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                <div class="delivery-card p-4 text-center">
+                    <div class="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-3">
+                        <i class="fas fa-pills text-blue-600 text-2xl"></i>
+                    </div>
+                    <h3 class="font-semibold text-gray-900 mb-1">Lisinopril 10mg</h3>
+                    <p class="text-sm text-gray-600 mb-2">Blood pressure medication</p>
+                    <p class="text-lg font-bold text-blue-600 mb-3">$12.99</p>
+                    <button onclick="addToCart('lisinopril')" class="w-full bg-blue-600 text-white py-2 px-3 rounded-lg hover:bg-blue-700 transition-colors text-sm">
+                        Add to Cart
+                    </button>
+                </div>
+
+                <div class="delivery-card p-4 text-center">
+                    <div class="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-3">
+                        <i class="fas fa-capsules text-green-600 text-2xl"></i>
+                    </div>
+                    <h3 class="font-semibold text-gray-900 mb-1">Vitamin D3 2000IU</h3>
+                    <p class="text-sm text-gray-600 mb-2">Daily supplement</p>
+                    <p class="text-lg font-bold text-green-600 mb-3">$8.99</p>
+                    <button onclick="addToCart('vitamin-d')" class="w-full bg-blue-600 text-white py-2 px-3 rounded-lg hover:bg-blue-700 transition-colors text-sm">
+                        Add to Cart
+                    </button>
+                </div>
+
+                <div class="delivery-card p-4 text-center">
+                    <div class="w-16 h-16 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-3">
+                        <i class="fas fa-tablets text-purple-600 text-2xl"></i>
+                    </div>
+                    <h3 class="font-semibold text-gray-900 mb-1">Metformin 500mg</h3>
+                    <p class="text-sm text-gray-600 mb-2">Diabetes medication</p>
+                    <p class="text-lg font-bold text-purple-600 mb-3">$15.99</p>
+                    <button onclick="addToCart('metformin')" class="w-full bg-blue-600 text-white py-2 px-3 rounded-lg hover:bg-blue-700 transition-colors text-sm">
+                        Add to Cart
+                    </button>
+                </div>
+
+                <div class="delivery-card p-4 text-center">
+                    <div class="w-16 h-16 bg-orange-100 rounded-full flex items-center justify-center mx-auto mb-3">
+                        <i class="fas fa-prescription-bottle text-orange-600 text-2xl"></i>
+                    </div>
+                    <h3 class="font-semibold text-gray-900 mb-1">Ibuprofen 200mg</h3>
+                    <p class="text-sm text-gray-600 mb-2">Pain relief</p>
+                    <p class="text-lg font-bold text-orange-600 mb-3">$6.99</p>
+                    <button onclick="addToCart('ibuprofen')" class="w-full bg-blue-600 text-white py-2 px-3 rounded-lg hover:bg-blue-700 transition-colors text-sm">
+                        Add to Cart
+                    </button>
+                </div>
+
+                <div class="delivery-card p-4 text-center">
+                    <div class="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-3">
+                        <i class="fas fa-heartbeat text-red-600 text-2xl"></i>
+                    </div>
+                    <h3 class="font-semibold text-gray-900 mb-1">Atorvastatin 20mg</h3>
+                    <p class="text-sm text-gray-600 mb-2">Cholesterol medication</p>
+                    <p class="text-lg font-bold text-red-600 mb-3">$18.99</p>
+                    <button onclick="addToCart('atorvastatin')" class="w-full bg-blue-600 text-white py-2 px-3 rounded-lg hover:bg-blue-700 transition-colors text-sm">
+                        Add to Cart
+                    </button>
+                </div>
+
+                <div class="delivery-card p-4 text-center">
+                    <div class="w-16 h-16 bg-teal-100 rounded-full flex items-center justify-center mx-auto mb-3">
+                        <i class="fas fa-syringe text-teal-600 text-2xl"></i>
+                    </div>
+                    <h3 class="font-semibold text-gray-900 mb-1">Insulin Pen</h3>
+                    <p class="text-sm text-gray-600 mb-2">Diabetes injection</p>
+                    <p class="text-lg font-bold text-teal-600 mb-3">$45.99</p>
+                    <button onclick="addToCart('insulin')" class="w-full bg-blue-600 text-white py-2 px-3 rounded-lg hover:bg-blue-700 transition-colors text-sm">
+                        Add to Cart
+                    </button>
+                </div>
+
+                <div class="delivery-card p-4 text-center">
+                    <div class="w-16 h-16 bg-indigo-100 rounded-full flex items-center justify-center mx-auto mb-3">
+                        <i class="fas fa-lungs text-indigo-600 text-2xl"></i>
+                    </div>
+                    <h3 class="font-semibold text-gray-900 mb-1">Albuterol Inhaler</h3>
+                    <p class="text-sm text-gray-600 mb-2">Asthma medication</p>
+                    <p class="text-lg font-bold text-indigo-600 mb-3">$25.99</p>
+                    <button onclick="addToCart('albuterol')" class="w-full bg-blue-600 text-white py-2 px-3 rounded-lg hover:bg-blue-700 transition-colors text-sm">
+                        Add to Cart
+                    </button>
+                </div>
+
+                <div class="delivery-card p-4 text-center">
+                    <div class="w-16 h-16 bg-pink-100 rounded-full flex items-center justify-center mx-auto mb-3">
+                        <i class="fas fa-brain text-pink-600 text-2xl"></i>
+                    </div>
+                    <h3 class="font-semibold text-gray-900 mb-1">Sertraline 50mg</h3>
+                    <p class="text-sm text-gray-600 mb-2">Antidepressant</p>
+                    <p class="text-lg font-bold text-pink-600 mb-3">$22.99</p>
+                    <button onclick="addToCart('sertraline')" class="w-full bg-blue-600 text-white py-2 px-3 rounded-lg hover:bg-blue-700 transition-colors text-sm">
+                        Add to Cart
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <!-- Order Tracking -->
+        <section class="slide-in mb-8">
+            <div class="flex justify-between items-center mb-6">
+                <h2 class="text-xl font-semibold text-gray-900">Track Orders</h2>
+                <button onclick="viewAllOrders()" class="text-blue-600 text-sm hover:underline">View All Orders</button>
+            </div>
+            
+            <div class="delivery-card p-6">
+                <div class="flex justify-between items-start mb-6">
+                    <div>
+                        <h3 class="font-semibold text-gray-900">Order #DEL-2024-001</h3>
+                        <p class="text-sm text-gray-600">HealthPlus Pharmacy • 3 items</p>
+                    </div>
+                    <span class="status-badge status-shipped">Shipped</span>
+                </div>
+                
+                <!-- Tracking Progress -->
+                <div class="mb-6">
+                    <div class="flex justify-between items-center mb-2">
+                        <span class="text-sm text-gray-600">Delivery Progress</span>
+                        <span class="text-sm font-medium text-gray-900">75%</span>
+                    </div>
+                    <div class="delivery-progress">
+                        <div class="delivery-progress-bar" style="width: 75%"></div>
+                    </div>
+                </div>
+                
+                <!-- Tracking Steps -->
+                <div class="grid grid-cols-4 gap-4 mb-6">
+                    <div class="tracking-step completed">
+                        <div class="tracking-dot completed">
+                            <i class="fas fa-check text-xs"></i>
+                        </div>
+                        <div class="text-xs text-gray-600">Order Placed</div>
+                    </div>
+                    <div class="tracking-step completed">
+                        <div class="tracking-dot completed">
+                            <i class="fas fa-check text-xs"></i>
+                        </div>
+                        <div class="text-xs text-gray-600">Confirmed</div>
+                    </div>
+                    <div class="tracking-step active">
+                        <div class="tracking-dot active">
+                            <i class="fas fa-truck text-xs"></i>
+                        </div>
+                        <div class="text-xs text-gray-600">Out for Delivery</div>
+                    </div>
+                    <div class="tracking-step">
+                        <div class="tracking-dot">
+                            <i class="fas fa-home text-xs"></i>
+                        </div>
+                        <div class="text-xs text-gray-600">Delivered</div>
+                    </div>
+                </div>
+                
+                <div class="flex justify-between items-center">
+                    <div>
+                        <p class="text-sm text-gray-600">Estimated arrival:</p>
+                        <p class="font-medium text-gray-900">Today, 2:30 PM - 3:00 PM</p>
+                    </div>
+                    <button onclick="trackOrder('DEL-2024-001')" class="bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 transition-colors">
+                        Track Order
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <!-- Delivery Info -->
+        <section class="slide-in">
+            <h2 class="text-xl font-semibold text-gray-900 mb-6">Delivery Information</h2>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div class="delivery-card p-6 text-center">
+                    <div class="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <i class="fas fa-shipping-fast text-blue-600 text-2xl"></i>
+                    </div>
+                    <h3 class="font-semibold text-gray-900 mb-2">Fast Delivery</h3>
+                    <p class="text-sm text-gray-600">Get your medicines delivered in 15-30 minutes</p>
+                </div>
+                
+                <div class="delivery-card p-6 text-center">
+                    <div class="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <i class="fas fa-shield-alt text-green-600 text-2xl"></i>
+                    </div>
+                    <h3 class="font-semibold text-gray-900 mb-2">Safe & Secure</h3>
+                    <p class="text-sm text-gray-600">All medicines are verified and properly stored</p>
+                </div>
+                
+                <div class="delivery-card p-6 text-center">
+                    <div class="w-16 h-16 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <i class="fas fa-clock text-purple-600 text-2xl"></i>
+                    </div>
+                    <h3 class="font-semibold text-gray-900 mb-2">24/7 Service</h3>
+                    <p class="text-sm text-gray-600">Order anytime, day or night</p>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Payment Modal -->
+    <div id="payment-modal" class="modal-overlay fixed inset-0 z-50 hidden flex items-center justify-center p-4">
+        <div class="modal-content w-full max-w-4xl">
+            <!-- Payment Methods Selection -->
+            <div id="payment-methods">
+                <div class="p-6 border-b border-gray-200">
+                    <div class="flex items-center justify-between">
+                        <h2 class="text-2xl font-bold text-gray-900">Payment</h2>
+                        <button onclick="closePaymentModal()" class="p-2 text-gray-500 hover:text-gray-700">
+                            <i class="fas fa-times text-xl"></i>
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="p-6">
+                    <!-- Order Summary -->
+                    <div class="bg-gray-50 rounded-lg p-4 mb-6">
+                        <h3 class="font-semibold text-gray-900 mb-3">Order Summary</h3>
+                        <div class="flex justify-between items-center mb-2">
+                            <span>Subtotal:</span>
+                            <span id="payment-subtotal">$0.00</span>
+                        </div>
+                        <div class="flex justify-between items-center mb-2">
+                            <span>Delivery Fee:</span>
+                            <span id="payment-delivery">$4.99</span>
+                        </div>
+                        <div class="flex justify-between items-center text-lg font-bold border-t border-gray-200 pt-2">
+                            <span>Total:</span>
+                            <span id="payment-total">$0.00</span>
+                        </div>
+                    </div>
+                    
+                    <!-- Payment Methods -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
+                        <button onclick="selectPaymentMethod('upi')" class="payment-method p-4 border-2 border-gray-200 rounded-lg hover:border-blue-500 transition-colors text-left" data-method="upi">
+                            <div class="flex items-center space-x-3 mb-2">
+                                <div class="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
+                                    <i class="fas fa-mobile-alt text-blue-600"></i>
+                                </div>
+                                <div>
+                                    <h4 class="font-semibold text-gray-900">UPI Payment</h4>
+                                    <p class="text-sm text-gray-600">Pay with UPI ID</p>
+                                </div>
+                            </div>
+                            <p class="text-xs text-gray-500">Fast & secure payment</p>
+                        </button>
+                        
+                        <button onclick="selectPaymentMethod('card')" class="payment-method p-4 border-2 border-gray-200 rounded-lg hover:border-blue-500 transition-colors text-left" data-method="card">
+                            <div class="flex items-center space-x-3 mb-2">
+                                <div class="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center">
+                                    <i class="fas fa-credit-card text-green-600"></i>
+                                </div>
+                                <div>
+                                    <h4 class="font-semibold text-gray-900">Credit/Debit Card</h4>
+                                    <p class="text-sm text-gray-600">Pay with card</p>
+                                </div>
+                            </div>
+                            <p class="text-xs text-gray-500">Visa, Mastercard, Rupay</p>
+                        </button>
+                        
+                        <button onclick="selectPaymentMethod('wallet')" class="payment-method p-4 border-2 border-gray-200 rounded-lg hover:border-blue-500 transition-colors text-left" data-method="wallet">
+                            <div class="flex items-center space-x-3 mb-2">
+                                <div class="w-10 h-10 bg-purple-100 rounded-full flex items-center justify-center">
+                                    <i class="fas fa-wallet text-purple-600"></i>
+                                </div>
+                                <div>
+                                    <h4 class="font-semibold text-gray-900">Wallet</h4>
+                                    <p class="text-sm text-gray-600">Pay from wallet</p>
+                                </div>
+                            </div>
+                            <p class="text-xs text-gray-500">Available: <span id="wallet-amount">$50.00</span></p>
+                        </button>
+                        
+                        <button onclick="selectPaymentMethod('insurance')" class="payment-method p-4 border-2 border-gray-200 rounded-lg hover:border-blue-500 transition-colors text-left" data-method="insurance">
+                            <div class="flex items-center space-x-3 mb-2">
+                                <div class="w-10 h-10 bg-orange-100 rounded-full flex items-center justify-center">
+                                    <i class="fas fa-shield-alt text-orange-600"></i>
+                                </div>
+                                <div>
+                                    <h4 class="font-semibold text-gray-900">Insurance</h4>
+                                    <p class="text-sm text-gray-600">Insurance discount</p>
+                                </div>
+                            </div>
+                            <p class="text-xs text-gray-500">Up to 80% off</p>
+                        </button>
+                        
+                        <button onclick="selectPaymentMethod('health-scheme')" class="payment-method p-4 border-2 border-gray-200 rounded-lg hover:border-blue-500 transition-colors text-left" data-method="health-scheme">
+                            <div class="flex items-center space-x-3 mb-2">
+                                <div class="w-10 h-10 bg-teal-100 rounded-full flex items-center justify-center">
+                                    <i class="fas fa-heart text-teal-600"></i>
+                                </div>
+                                <div>
+                                    <h4 class="font-semibold text-gray-900">Health Scheme</h4>
+                                    <p class="text-sm text-gray-600">Use health credits</p>
+                                </div>
+                            </div>
+                            <p class="text-xs text-gray-500">Government schemes</p>
+                        </button>
+                        
+                        <button onclick="selectPaymentMethod('cod')" class="payment-method p-4 border-2 border-gray-200 rounded-lg hover:border-blue-500 transition-colors text-left" data-method="cod">
+                            <div class="flex items-center space-x-3 mb-2">
+                                <div class="w-10 h-10 bg-red-100 rounded-full flex items-center justify-center">
+                                    <i class="fas fa-hand-holding-usd text-red-600"></i>
+                                </div>
+                                <div>
+                                    <h4 class="font-semibold text-gray-900">Cash on Delivery</h4>
+                                    <p class="text-sm text-gray-600">Pay when you receive</p>
+                                </div>
+                            </div>
+                            <p class="text-xs text-gray-500">Additional $2 charge</p>
+                        </button>
+                    </div>
+                    
+                    <!-- Payment Forms -->
+                    <div class="space-y-6">
+                        <!-- UPI Form -->
+                        <div id="upi-form" class="payment-form hidden">
+                            <h4 class="font-semibold text-gray-900 mb-4">UPI Payment</h4>
+                            <div class="space-y-4">
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">UPI ID</label>
+                                    <input type="text" id="upi-id" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500" placeholder="yourname@upi">
+                                </div>
+                                <div class="bg-blue-50 p-4 rounded-lg">
+                                    <p class="text-sm text-blue-800">
+                                        <i class="fas fa-info-circle mr-2"></i>
+                                        You'll receive a payment request on your UPI app. Please approve it to complete the payment.
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Card Form -->
+                        <div id="card-form" class="payment-form hidden">
+                            <h4 class="font-semibold text-gray-900 mb-4">Card Payment</h4>
+                            <div class="space-y-4">
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">Card Number</label>
+                                    <input type="text" id="card-number" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500" placeholder="1234 5678 9012 3456" maxlength="19">
+                                </div>
+                                <div class="grid grid-cols-2 gap-4">
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-2">Expiry Date</label>
+                                        <input type="text" id="expiry-date" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500" placeholder="MM/YY" maxlength="5">
+                                    </div>
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-2">CVV</label>
+                                        <input type="text" id="cvv" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500" placeholder="123" maxlength="4">
+                                    </div>
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">Cardholder Name</label>
+                                    <input type="text" id="cardholder-name" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500" placeholder="John Doe">
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Wallet Form -->
+                        <div id="wallet-form" class="payment-form hidden">
+                            <h4 class="font-semibold text-gray-900 mb-4">Wallet Payment</h4>
+                            <div class="bg-green-50 p-4 rounded-lg mb-4">
+                                <div class="flex items-center justify-between">
+                                    <div>
+                                        <p class="font-semibold text-green-900">Available Balance</p>
+                                        <p class="text-2xl font-bold text-green-600" id="wallet-balance">$50.00</p>
+                                    </div>
+                                    <i class="fas fa-wallet text-green-600 text-3xl"></i>
+                                </div>
+                            </div>
+                            <div class="space-y-3">
+                                <div class="flex items-center space-x-3 p-3 border border-gray-200 rounded-lg">
+                                    <input type="radio" name="wallet-option" value="full" class="text-blue-600">
+                                    <label class="flex-1">Pay full amount from wallet</label>
+                                    <span class="font-semibold" id="wallet-full-amount">$0.00</span>
+                                </div>
+                                <div class="flex items-center space-x-3 p-3 border border-gray-200 rounded-lg">
+                                    <input type="radio" name="wallet-option" value="partial" class="text-blue-600">
+                                    <label class="flex-1">Use partial amount</label>
+                                    <input type="number" class="w-20 px-2 py-1 border border-gray-300 rounded" placeholder="$0">
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Insurance Form -->
+                        <div id="insurance-form" class="payment-form hidden">
+                            <h4 class="font-semibold text-gray-900 mb-4">Insurance Payment</h4>
+                            <div class="space-y-4">
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">Insurance Provider</label>
+                                    <select class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                                        <option>Select your insurance</option>
+                                        <option>Blue Cross Blue Shield</option>
+                                        <option>Aetna</option>
+                                        <option>Cigna</option>
+                                        <option>UnitedHealth</option>
+                                        <option>Other</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">Insurance ID</label>
+                                    <input type="text" id="insurance-id" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500" placeholder="INS123456789">
+                                </div>
+                                <div class="bg-orange-50 p-4 rounded-lg">
+                                    <p class="text-sm text-orange-800">
+                                        <i class="fas fa-info-circle mr-2"></i>
+                                        Your insurance may cover up to 80% of the cost. You'll only pay the remaining amount.
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Health Scheme Form -->
+                        <div id="health-scheme-form" class="payment-form hidden">
+                            <h4 class="font-semibold text-gray-900 mb-4">Health Scheme Payment</h4>
+                            <div class="space-y-4">
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">Health Scheme</label>
+                                    <select class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                                        <option>Select your scheme</option>
+                                        <option>Ayushman Bharat</option>
+                                        <option>ESIC</option>
+                                        <option>CGHS</option>
+                                        <option>State Health Scheme</option>
+                                        <option>Other</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">Scheme ID</label>
+                                    <input type="text" id="scheme-id" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500" placeholder="AB-1234-5678-9012">
+                                </div>
+                                <div class="bg-teal-50 p-4 rounded-lg">
+                                    <p class="text-sm text-teal-800">
+                                        <i class="fas fa-info-circle mr-2"></i>
+                                        Your health scheme benefits will be applied automatically. You may be eligible for free or discounted medicines.
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- COD Form -->
+                        <div id="cod-form" class="payment-form hidden">
+                            <h4 class="font-semibold text-gray-900 mb-4">Cash on Delivery</h4>
+                            <div class="bg-yellow-50 p-4 rounded-lg mb-4">
+                                <p class="text-sm text-yellow-800">
+                                    <i class="fas fa-info-circle mr-2"></i>
+                                    Please keep exact change ready. Additional $2 charge applies for COD orders.
+                                </p>
+                            </div>
+                            <div class="space-y-4">
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">Amount to Pay</label>
+                                    <div class="text-2xl font-bold text-gray-900" id="cod-amount">$0.00</div>
+                                </div>
+                                <div class="text-sm text-gray-600">
+                                    <p>• Have exact change ready for faster delivery</p>
+                                    <p>• Check your order before paying</p>
+                                    <p>• Keep your phone accessible for delivery updates</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="flex justify-between items-center mt-8">
+                        <button onclick="closePaymentModal()" class="bg-gray-300 text-gray-700 py-3 px-6 rounded-lg font-semibold hover:bg-gray-400 transition-colors">
+                            Cancel
+                        </button>
+                        <button onclick="processPayment()" class="bg-blue-600 text-white py-3 px-6 rounded-lg font-semibold hover:bg-blue-700 transition-colors">
+                            Pay Now
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Payment Processing -->
+            <div id="payment-processing" class="hidden p-12 text-center">
+                <div class="mb-6">
+                    <div class="w-20 h-20 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+                    </div>
+                    <h3 class="text-xl font-semibold text-gray-900 mb-2">Processing Payment</h3>
+                    <p class="text-gray-600">Please wait while we process your payment...</p>
+                </div>
+                
+                <div class="space-y-3 text-left max-w-md mx-auto">
+                    <div class="flex items-center space-x-3">
+                        <div class="w-6 h-6 bg-green-100 rounded-full flex items-center justify-center">
+                            <i class="fas fa-check text-green-600 text-xs"></i>
+                        </div>
+                        <span class="text-sm text-gray-700">Validating payment details</span>
+                    </div>
+                    <div class="flex items-center space-x-3">
+                        <div class="w-6 h-6 bg-blue-100 rounded-full flex items-center justify-center">
+                            <div class="animate-spin rounded-full h-3 w-3 border-b-2 border-blue-600"></div>
+                        </div>
+                        <span class="text-sm text-gray-700">Processing with payment gateway</span>
+                    </div>
+                    <div class="flex items-center space-x-3">
+                        <div class="w-6 h-6 bg-gray-100 rounded-full flex items-center justify-center">
+                            <div class="h-3 w-3 bg-gray-300 rounded-full"></div>
+                        </div>
+                        <span class="text-sm text-gray-500">Confirming payment</span>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Payment Success -->
+            <div id="payment-success" class="hidden p-8 text-center">
+                <div class="mb-6">
+                    <div class="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <i class="fas fa-check text-green-600 text-3xl"></i>
+                    </div>
+                    <h3 class="text-2xl font-bold text-gray-900 mb-2">Payment Successful!</h3>
+                    <p class="text-gray-600">Your order has been confirmed and is being processed.</p>
+                </div>
+                
+                <!-- Order Details -->
+                <div class="bg-gray-50 rounded-lg p-6 mb-6 text-left">
+                    <h4 class="font-semibold text-gray-900 mb-4">Order Details</h4>
+                    <div class="space-y-2 text-sm">
+                        <div class="flex justify-between">
+                            <span class="text-gray-600">Order ID:</span>
+                            <span class="font-medium" id="order-id">ORD-123456</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-gray-600">Date:</span>
+                            <span class="font-medium" id="order-date">Dec 11, 2024</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-gray-600">Time:</span>
+                            <span class="font-medium" id="order-time">2:30 PM</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-gray-600">Pharmacy:</span>
+                            <span class="font-medium">HealthPlus Pharmacy</span>
+                        </div>
+                    </div>
+                    
+                    <div class="border-t border-gray-200 pt-4 mt-4">
+                        <div class="flex justify-between items-center mb-2">
+                            <span>Subtotal:</span>
+                            <span id="receipt-subtotal">$0.00</span>
+                        </div>
+                        <div class="flex justify-between items-center mb-2">
+                            <span>Delivery Fee:</span>
+                            <span id="receipt-delivery">$4.99</span>
+                        </div>
+                        <div class="flex justify-between items-center text-lg font-bold border-t border-gray-200 pt-2">
+                            <span>Total Paid:</span>
+                            <span id="receipt-total">$0.00</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Action Buttons -->
+                <div class="flex flex-col sm:flex-row gap-4">
+                    <button onclick="downloadReceipt()" class="flex-1 bg-blue-600 text-white py-3 px-6 rounded-lg font-semibold hover:bg-blue-700 transition-colors">
+                        <i class="fas fa-download mr-2"></i>Download Receipt
+                    </button>
+                    <button onclick="shareReceipt()" class="flex-1 bg-green-600 text-white py-3 px-6 rounded-lg font-semibold hover:bg-green-700 transition-colors">
+                        <i class="fas fa-share mr-2"></i>Share Receipt
+                    </button>
+                    <button onclick="continueShopping()" class="flex-1 bg-gray-300 text-gray-700 py-3 px-6 rounded-lg font-semibold hover:bg-gray-400 transition-colors">
+                        Continue Shopping
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Cart Modal -->
+    <div id="cart-modal" class="modal-overlay fixed inset-0 z-50 hidden flex items-center justify-center p-4">
+        <div class="modal-content w-full max-w-2xl">
+            <div class="p-6 border-b border-gray-200">
+                <div class="flex items-center justify-between">
+                    <h2 class="text-2xl font-bold text-gray-900">Shopping Cart</h2>
+                    <button onclick="closeCartModal()" class="p-2 text-gray-500 hover:text-gray-700">
+                        <i class="fas fa-times text-xl"></i>
+                    </button>
+                </div>
+            </div>
+            
+            <div class="p-6">
+                <div id="cart-items" class="space-y-4 mb-6">
+                    <!-- Cart items will be populated here -->
+                </div>
+                
+                <div class="border-t border-gray-200 pt-4">
+                    <div class="flex justify-between items-center mb-2">
+                        <span class="font-semibold">Subtotal:</span>
+                        <span id="cart-subtotal" class="font-semibold">$0.00</span>
+                    </div>
+                    <div class="flex justify-between items-center mb-2">
+                        <span>Delivery Fee:</span>
+                        <span id="cart-delivery">$4.99</span>
+                    </div>
+                    <div class="flex justify-between items-center mb-4 text-lg font-bold">
+                        <span>Total:</span>
+                        <span id="cart-total">$0.00</span>
+                    </div>
+                    
+                    <div class="flex space-x-4">
+                        <button onclick="closeCartModal()" class="flex-1 bg-gray-300 text-gray-700 py-3 px-6 rounded-lg font-semibold hover:bg-gray-400 transition-colors">
+                            Continue Shopping
+                        </button>
+                        <button onclick="proceedToCheckout()" class="flex-1 bg-blue-600 text-white py-3 px-6 rounded-lg font-semibold hover:bg-blue-700 transition-colors">
+                            Proceed to Checkout
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Emergency FAB -->
+    <button onclick="emergencySystem.triggerEmergency()" class="fixed bottom-24 right-6 w-14 h-14 bg-red-600 text-white rounded-full shadow-lg flex items-center justify-center z-40 hover:bg-red-700 transition-colors">
+        <i class="fas fa-exclamation text-xl"></i>
+    </button>
+
+    <!-- Bottom Navigation -->
+    <nav class="bottom-nav fixed bottom-0 left-0 right-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 py-3">
+            <div class="flex justify-around items-center">
+                <a href="index.html" class="nav-item flex flex-col items-center space-y-1 text-gray-600">
+                    <i class="fas fa-home text-xl"></i>
+                    <span class="text-xs font-medium">Home</span>
+                </a>
+                <a href="health.html" class="nav-item flex flex-col items-center space-y-1 text-gray-600">
+                    <i class="fas fa-heartbeat text-xl"></i>
+                    <span class="text-xs font-medium">Health</span>
+                </a>
+                <a href="assistant.html" class="nav-item flex flex-col items-center space-y-1 text-gray-600">
+                    <i class="fas fa-robot text-xl"></i>
+                    <span class="text-xs font-medium">Assistant</span>
+                </a>
+                <a href="doctors.html" class="nav-item flex flex-col items-center space-y-1 text-gray-600">
+                    <i class="fas fa-user-md text-xl"></i>
+                    <span class="text-xs font-medium">Doctors</span>
+                </a>
+                <a href="profile.html" class="nav-item flex flex-col items-center space-y-1 text-gray-600">
+                    <i class="fas fa-user text-xl"></i>
+                    <span class="text-xs font-medium">Profile</span>
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Scripts -->
+    <script src="main.js"></script>
+    <script>
+        let cart = [];
+        let selectedPharmacy = null;
+
+        // Initialize page
+        document.addEventListener('DOMContentLoaded', function() {
+            loadCartFromStorage();
+            updateCartDisplay();
+        });
+
+        function changeLocation() {
+            notificationSystem.show('Opening location selector...', 'info');
+            // In a real app, this would open a location picker
+        }
+
+        function searchMedicines() {
+            const query = document.getElementById('medicine-search').value;
+            if (query.trim()) {
+                notificationSystem.show(`Searching for "${query}"...`, 'info');
+                // In a real app, this would perform a search
+            }
+        }
+
+        function filterByCategory(category) {
+            notificationSystem.show(`Filtering by ${category}...`, 'info');
+            // In a real app, this would filter the medicine list
+        }
+
+        function selectPharmacy(pharmacyId) {
+            selectedPharmacy = pharmacyId;
+            notificationSystem.show('Pharmacy selected successfully!', 'success');
+            
+            // Update UI to show selected pharmacy
+            document.querySelectorAll('.pharmacy-card').forEach(card => {
+                card.classList.remove('border-blue-500', 'bg-blue-50');
+            });
+            
+            event.target.closest('.pharmacy-card').classList.add('border-blue-500', 'bg-blue-50');
+        }
+
+        function addToCart(medicineId) {
+            const medicines = {
+                'lisinopril': { name: 'Lisinopril 10mg', price: 12.99, image: 'fas fa-pills' },
+                'vitamin-d': { name: 'Vitamin D3 2000IU', price: 8.99, image: 'fas fa-capsules' },
+                'metformin': { name: 'Metformin 500mg', price: 15.99, image: 'fas fa-tablets' },
+                'ibuprofen': { name: 'Ibuprofen 200mg', price: 6.99, image: 'fas fa-prescription-bottle' },
+                'atorvastatin': { name: 'Atorvastatin 20mg', price: 18.99, image: 'fas fa-heartbeat' },
+                'insulin': { name: 'Insulin Pen', price: 45.99, image: 'fas fa-syringe' },
+                'albuterol': { name: 'Albuterol Inhaler', price: 25.99, image: 'fas fa-lungs' },
+                'sertraline': { name: 'Sertraline 50mg', price: 22.99, image: 'fas fa-brain' }
+            };
+            
+            const medicine = medicines[medicineId];
+            if (!medicine) return;
+            
+            // Check if item already in cart
+            const existingItem = cart.find(item => item.id === medicineId);
+            if (existingItem) {
+                existingItem.quantity += 1;
+            } else {
+                cart.push({
+                    id: medicineId,
+                    name: medicine.name,
+                    price: medicine.price,
+                    image: medicine.image,
+                    quantity: 1
+                });
+            }
+            
+            updateCartStorage();
+            updateCartDisplay();
+            notificationSystem.show(`${medicine.name} added to cart!`, 'success');
+        }
+
+        function showCart() {
+            if (cart.length === 0) {
+                notificationSystem.show('Your cart is empty', 'info');
+                return;
+            }
+            
+            populateCartModal();
+            document.getElementById('cart-modal').classList.remove('hidden');
+            
+            // Animate in
+            anime({
+                targets: '#cart-modal .modal-content',
+                scale: [0.8, 1],
+                opacity: [0, 1],
+                duration: 300,
+                easing: 'easeOutQuart'
+            });
+        }
+
+        function populateCartModal() {
+            const container = document.getElementById('cart-items');
+            
+            container.innerHTML = cart.map(item => `
+                <div class="flex items-center space-x-4 p-4 border border-gray-200 rounded-lg">
+                    <div class="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center">
+                        <i class="${item.image} text-blue-600"></i>
+                    </div>
+                    <div class="flex-1">
+                        <h4 class="font-medium text-gray-900">${item.name}</h4>
+                        <p class="text-sm text-gray-600">$${item.price.toFixed(2)} each</p>
+                    </div>
+                    <div class="flex items-center space-x-2">
+                        <button onclick="updateQuantity('${item.id}', -1)" class="w-8 h-8 bg-gray-200 rounded-full flex items-center justify-center hover:bg-gray-300">
+                            <i class="fas fa-minus text-xs"></i>
+                        </button>
+                        <span class="w-8 text-center">${item.quantity}</span>
+                        <button onclick="updateQuantity('${item.id}', 1)" class="w-8 h-8 bg-gray-200 rounded-full flex items-center justify-center hover:bg-gray-300">
+                            <i class="fas fa-plus text-xs"></i>
+                        </button>
+                    </div>
+                    <button onclick="removeFromCart('${item.id}')" class="text-red-600 hover:text-red-800">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                </div>
+            `).join('');
+            
+            updateCartTotals();
+        }
+
+        function updateQuantity(medicineId, change) {
+            const item = cart.find(item => item.id === medicineId);
+            if (item) {
+                item.quantity += change;
+                if (item.quantity <= 0) {
+                    removeFromCart(medicineId);
+                } else {
+                    updateCartStorage();
+                    updateCartDisplay();
+                    populateCartModal();
+                }
+            }
+        }
+
+        function removeFromCart(medicineId) {
+            cart = cart.filter(item => item.id !== medicineId);
+            updateCartStorage();
+            updateCartDisplay();
+            populateCartModal();
+            
+            if (cart.length === 0) {
+                closeCartModal();
+            }
+        }
+
+        function updateCartTotals() {
+            const subtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+            const deliveryFee = subtotal > 25 ? 0 : 4.99;
+            const total = subtotal + deliveryFee;
+            
+            document.getElementById('cart-subtotal').textContent = `$${subtotal.toFixed(2)}`;
+            document.getElementById('cart-delivery').textContent = deliveryFee === 0 ? 'Free' : `$${deliveryFee.toFixed(2)}`;
+            document.getElementById('cart-total').textContent = `$${total.toFixed(2)}`;
+            
+            // Update payment modal totals
+            document.getElementById('payment-subtotal').textContent = `$${subtotal.toFixed(2)}`;
+            document.getElementById('payment-delivery').textContent = deliveryFee === 0 ? 'Free' : `$${deliveryFee.toFixed(2)}`;
+            document.getElementById('payment-total').textContent = `$${total.toFixed(2)}`;
+            
+            // Update COD amount
+            const codTotal = total + 2; // Additional $2 for COD
+            document.getElementById('cod-amount').textContent = `$${codTotal.toFixed(2)}`;
+            
+            // Update wallet full amount
+            document.getElementById('wallet-full-amount').textContent = `$${total.toFixed(2)}`;
+        }
+
+        function closeCartModal() {
+            document.getElementById('cart-modal').classList.add('hidden');
+        }
+
+        function proceedToCheckout() {
+            if (!selectedPharmacy) {
+                notificationSystem.show('Please select a pharmacy first', 'warning');
+                return;
+            }
+            
+            if (cart.length === 0) {
+                notificationSystem.show('Your cart is empty', 'warning');
+                return;
+            }
+            
+            closeCartModal();
+            showPaymentModal();
+        }
+
+        function showPaymentModal() {
+            document.getElementById('payment-modal').classList.remove('hidden');
+            
+            // Animate in
+            anime({
+                targets: '#payment-modal .modal-content',
+                scale: [0.8, 1],
+                opacity: [0, 1],
+                duration: 300,
+                easing: 'easeOutQuart'
+            });
+        }
+
+        function closePaymentModal() {
+            document.getElementById('payment-modal').classList.add('hidden');
+            document.getElementById('payment-processing').classList.add('hidden');
+            document.getElementById('payment-success').classList.add('hidden');
+        }
+
+        function selectPaymentMethod(method) {
+            // Hide all payment forms
+            document.querySelectorAll('.payment-form').forEach(form => {
+                form.classList.add('hidden');
+            });
+            
+            // Show selected payment form
+            document.getElementById(`${method}-form`).classList.remove('hidden');
+            
+            // Update selected payment method
+            document.querySelectorAll('.payment-method').forEach(btn => {
+                btn.classList.remove('border-blue-500', 'bg-blue-50');
+            });
+            event.target.closest('.payment-method').classList.add('border-blue-500', 'bg-blue-50');
+        }
+
+        function processPayment() {
+            const selectedMethod = document.querySelector('.payment-method.border-blue-500');
+            if (!selectedMethod) {
+                notificationSystem.show('Please select a payment method', 'warning');
+                return;
+            }
+            
+            const method = selectedMethod.dataset.method;
+            
+            // Validate form based on payment method
+            if (!validatePaymentForm(method)) {
+                return;
+            }
+            
+            // Show processing screen
+            document.getElementById('payment-methods').classList.add('hidden');
+            document.getElementById('payment-processing').classList.remove('hidden');
+            
+            // Simulate payment processing
+            setTimeout(() => {
+                document.getElementById('payment-processing').classList.add('hidden');
+                document.getElementById('payment-success').classList.remove('hidden');
+                
+                // Generate order details
+                generateOrderDetails();
+                
+                // Clear cart
+                cart = [];
+                updateCartStorage();
+                updateCartDisplay();
+                
+                // Send notification
+                notificationSystem.show('Payment successful! Order confirmed.', 'success');
+            }, 3000);
+        }
+
+        function validatePaymentForm(method) {
+            switch(method) {
+                case 'upi':
+                    const upiId = document.getElementById('upi-id').value;
+                    if (!upiId || !upiId.includes('@')) {
+                        notificationSystem.show('Please enter a valid UPI ID', 'warning');
+                        return false;
+                    }
+                    break;
+                    
+                case 'card':
+                    const cardNumber = document.getElementById('card-number').value;
+                    const expiryDate = document.getElementById('expiry-date').value;
+                    const cvv = document.getElementById('cvv').value;
+                    
+                    if (!cardNumber || cardNumber.length < 16) {
+                        notificationSystem.show('Please enter a valid card number', 'warning');
+                        return false;
+                    }
+                    if (!expiryDate || expiryDate.length < 5) {
+                        notificationSystem.show('Please enter a valid expiry date', 'warning');
+                        return false;
+                    }
+                    if (!cvv || cvv.length < 3) {
+                        notificationSystem.show('Please enter a valid CVV', 'warning');
+                        return false;
+                    }
+                    break;
+                    
+                case 'wallet':
+                    const walletAmount = document.getElementById('wallet-amount').textContent;
+                    const total = document.getElementById('payment-total').textContent;
+                    if (parseFloat(walletAmount.replace('$', '')) < parseFloat(total.replace('$', ''))) {
+                        notificationSystem.show('Insufficient wallet balance', 'warning');
+                        return false;
+                    }
+                    break;
+                    
+                case 'insurance':
+                    const insuranceId = document.getElementById('insurance-id').value;
+                    if (!insuranceId) {
+                        notificationSystem.show('Please enter your insurance ID', 'warning');
+                        return false;
+                    }
+                    break;
+                    
+                case 'health-scheme':
+                    const schemeId = document.getElementById('scheme-id').value;
+                    if (!schemeId) {
+                        notificationSystem.show('Please enter your health scheme ID', 'warning');
+                        return false;
+                    }
+                    break;
+            }
+            return true;
+        }
+
+        function generateOrderDetails() {
+            const orderId = 'ORD-' + Date.now().toString().slice(-6);
+            document.getElementById('order-id').textContent = orderId;
+            
+            const now = new Date();
+            document.getElementById('order-date').textContent = now.toLocaleDateString();
+            document.getElementById('order-time').textContent = now.toLocaleTimeString();
+            
+            // Calculate totals
+            const subtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+            const deliveryFee = subtotal > 25 ? 0 : 4.99;
+            const total = subtotal + deliveryFee;
+            
+            document.getElementById('receipt-subtotal').textContent = `$${subtotal.toFixed(2)}`;
+            document.getElementById('receipt-delivery').textContent = deliveryFee === 0 ? 'Free' : `$${deliveryFee.toFixed(2)}`;
+            document.getElementById('receipt-total').textContent = `$${total.toFixed(2)}`;
+        }
+
+        function downloadReceipt() {
+            notificationSystem.show('Receipt downloaded successfully!', 'success');
+            // In a real app, this would generate and download a PDF receipt
+        }
+
+        function shareReceipt() {
+            if (navigator.share) {
+                navigator.share({
+                    title: 'Order Receipt',
+                    text: 'Your medicine order receipt',
+                    url: window.location.href
+                });
+            } else {
+                notificationSystem.show('Receipt shared successfully!', 'success');
+            }
+        }
+
+        function continueShopping() {
+            closePaymentModal();
+            notificationSystem.show('Welcome back! Continue shopping.', 'info');
+        }
+
+        function viewAllMedicines() {
+            notificationSystem.show('Loading all medicines...', 'info');
+        }
+
+        function showOrders() {
+            notificationSystem.show('Loading order history...', 'info');
+        }
+
+        function viewAllOrders() {
+            notificationSystem.show('Loading all orders...', 'info');
+        }
+
+        function trackOrder(orderId) {
+            notificationSystem.show(`Tracking order ${orderId}...`, 'info');
+            // In a real app, this would show detailed tracking information
+        }
+
+        function loadCartFromStorage() {
+            const savedCart = localStorage.getItem('healthy_nation_cart');
+            if (savedCart) {
+                cart = JSON.parse(savedCart);
+            }
+        }
+
+        function updateCartStorage() {
+            localStorage.setItem('healthy_nation_cart', JSON.stringify(cart));
+        }
+
+        function updateCartDisplay() {
+            const cartCount = cart.reduce((sum, item) => sum + item.quantity, 0);
+            const cartBadge = document.querySelector('.fa-shopping-cart').parentElement.querySelector('span');
+            if (cartBadge) {
+                cartBadge.textContent = cartCount;
+                cartBadge.style.display = cartCount > 0 ? 'flex' : 'none';
+            }
+        }
+    </script>
+</body>
+</html>

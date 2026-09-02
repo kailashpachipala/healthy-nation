@@ -1,0 +1,1000 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Profile - Healthy Nation</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+        }
+        
+        .profile-card {
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+            transition: all 0.3s ease;
+        }
+        
+        .profile-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+        }
+        
+        .profile-avatar {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 6px solid white;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+        
+        .info-item {
+            background: #f8fafc;
+            border-radius: 8px;
+            padding: 1rem;
+            margin-bottom: 0.5rem;
+        }
+        
+        .emergency-contact {
+            background: white;
+            border: 2px solid #e5e7eb;
+            border-radius: 12px;
+            padding: 1rem;
+            transition: all 0.3s ease;
+        }
+        
+        .emergency-contact:hover {
+            border-color: #2563eb;
+            transform: translateY(-1px);
+        }
+        
+        .device-card {
+            background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%);
+            border: 1px solid #bfdbfe;
+            border-radius: 12px;
+            transition: all 0.3s ease;
+        }
+        
+        .device-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 16px rgba(37, 99, 235, 0.1);
+        }
+        
+        .insurance-card {
+            background: linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%);
+            border: 1px solid #bbf7d0;
+            border-radius: 12px;
+            transition: all 0.3s ease;
+        }
+        
+        .insurance-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 16px rgba(5, 150, 105, 0.1);
+        }
+        
+        .setting-toggle {
+            width: 44px;
+            height: 24px;
+            background: #e5e7eb;
+            border-radius: 12px;
+            position: relative;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .setting-toggle.active {
+            background: #2563eb;
+        }
+        
+        .setting-toggle::after {
+            content: '';
+            position: absolute;
+            top: 2px;
+            left: 2px;
+            width: 20px;
+            height: 20px;
+            background: white;
+            border-radius: 50%;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        
+        .setting-toggle.active::after {
+            transform: translateX(20px);
+        }
+        
+        .bottom-nav {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-top: 1px solid rgba(0, 0, 0, 0.1);
+        }
+        
+        .nav-item {
+            transition: all 0.3s ease;
+        }
+        
+        .nav-item.active {
+            color: #2563eb;
+        }
+        
+        .nav-item:hover {
+            color: #2563eb;
+            transform: translateY(-2px);
+        }
+        
+        .floating-animation {
+            animation: float 6s ease-in-out infinite;
+        }
+        
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+        }
+        
+        .health-score-ring {
+            stroke-dasharray: 251.2;
+            stroke-dashoffset: 251.2;
+            transition: stroke-dashoffset 2s ease-in-out;
+        }
+        
+        .quick-action-btn {
+            background: linear-gradient(135deg, #2563eb 0%, #0891b2 100%);
+            transition: all 0.3s ease;
+        }
+        
+        .quick-action-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 16px rgba(37, 99, 235, 0.3);
+        }
+    </style>
+</head>
+<body class="min-h-screen pb-20">
+    <!-- Header -->
+    <header class="bg-white shadow-sm border-b border-gray-200">
+        <div class="max-w-7xl mx-auto px-4 py-4">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center space-x-3">
+                    <button onclick="window.location.href='index.html'" class="p-2 hover:bg-gray-100 rounded-lg transition-colors">
+                        <i class="fas fa-arrow-left text-gray-600"></i>
+                    </button>
+                    <div>
+                        <h1 class="text-xl font-bold text-gray-900">Profile</h1>
+                        <p class="text-sm text-gray-600">Manage your health information</p>
+                    </div>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <button class="p-2 text-gray-600 hover:text-blue-600 transition-colors" onclick="editProfile()">
+                        <i class="fas fa-edit text-xl"></i>
+                    </button>
+                    <button class="p-2 text-gray-600 hover:text-blue-600 transition-colors">
+                        <i class="fas fa-cog text-xl"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="max-w-7xl mx-auto px-4 py-6">
+        <!-- Profile Header -->
+        <section class="slide-in mb-6">
+            <div class="profile-card p-8 text-center">
+                <img src="https://kimi-web-img.moonshot.cn/img/doreenfamilymedical.com.au/42cf845047b409d68f0fccec1bd19c9dcf3ce9b2.jpg" alt="Profile Picture" class="profile-avatar mx-auto mb-4 floating-animation">
+                <h2 class="text-2xl font-bold text-gray-900 mb-2">Sarah Johnson</h2>
+                <p class="text-gray-600 mb-4">Age 32 • Blood Type O+</p>
+                
+                <!-- Health Score -->
+                <div class="flex justify-center mb-6">
+                    <div class="relative w-24 h-24">
+                        <svg class="w-24 h-24 transform -rotate-90">
+                            <circle cx="48" cy="48" r="40" stroke="#e5e7eb" stroke-width="8" fill="none"/>
+                            <circle cx="48" cy="48" r="40" stroke="#059669" stroke-width="8" fill="none" 
+                                    class="health-score-ring" style="stroke-dashoffset: 62.8"/>
+                        </svg>
+                        <div class="absolute inset-0 flex items-center justify-center">
+                            <span class="text-xl font-bold text-gray-900">85</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="grid grid-cols-3 gap-4 text-center">
+                    <div>
+                        <div class="text-2xl font-bold text-blue-600">7.2k</div>
+                        <div class="text-sm text-gray-600">Avg Daily Steps</div>
+                    </div>
+                    <div>
+                        <div class="text-2xl font-bold text-green-600">8h</div>
+                        <div class="text-sm text-gray-600">Avg Sleep</div>
+                    </div>
+                    <div>
+                        <div class="text-2xl font-bold text-purple-600">3</div>
+                        <div class="text-sm text-gray-600">Upcoming Appointments</div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Quick Stats Widgets -->
+        <section class="slide-in mb-6">
+            <h3 class="text-lg font-semibold text-gray-900 mb-4">Quick Stats</h3>
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <div class="bg-white rounded-xl p-4 shadow-sm border border-gray-200 text-center">
+                    <div class="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-3">
+                        <i class="fas fa-heartbeat text-blue-600 text-xl"></i>
+                    </div>
+                    <div class="text-2xl font-bold text-gray-900" id="current-hr">72</div>
+                    <div class="text-sm text-gray-600">Current HR</div>
+                    <div class="text-xs text-green-600 mt-1">Normal</div>
+                </div>
+                
+                <div class="bg-white rounded-xl p-4 shadow-sm border border-gray-200 text-center">
+                    <div class="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-3">
+                        <i class="fas fa-walking text-green-600 text-xl"></i>
+                    </div>
+                    <div class="text-2xl font-bold text-gray-900" id="today-steps">8,432</div>
+                    <div class="text-sm text-gray-600">Today's Steps</div>
+                    <div class="text-xs text-blue-600 mt-1">84% of goal</div>
+                </div>
+                
+                <div class="bg-white rounded-xl p-4 shadow-sm border border-gray-200 text-center">
+                    <div class="w-12 h-12 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-3">
+                        <i class="fas fa-pills text-purple-600 text-xl"></i>
+                    </div>
+                    <div class="text-2xl font-bold text-gray-900">2</div>
+                    <div class="text-sm text-gray-600">Medications</div>
+                    <div class="text-xs text-green-600 mt-1">On track</div>
+                </div>
+                
+                <div class="bg-white rounded-xl p-4 shadow-sm border border-gray-200 text-center">
+                    <div class="w-12 h-12 bg-orange-100 rounded-full flex items-center justify-center mx-auto mb-3">
+                        <i class="fas fa-calendar-check text-orange-600 text-xl"></i>
+                    </div>
+                    <div class="text-2xl font-bold text-gray-900">1</div>
+                    <div class="text-sm text-gray-600">Appointment</div>
+                    <div class="text-xs text-blue-600 mt-1">Tomorrow</div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Health Goals Widget -->
+        <section class="slide-in mb-6">
+            <div class="profile-card p-6">
+                <div class="flex items-center justify-between mb-4">
+                    <h3 class="text-lg font-semibold text-gray-900">Health Goals</h3>
+                    <button onclick="editHealthGoals()" class="text-blue-600 text-sm hover:underline">
+                        <i class="fas fa-edit mr-1"></i>Edit
+                    </button>
+                </div>
+                
+                <div class="space-y-4">
+                    <div class="goal-item">
+                        <div class="flex justify-between items-center mb-2">
+                            <span class="text-sm font-medium text-gray-700">Daily Steps</span>
+                            <span class="text-sm text-gray-600">8,432 / 10,000</span>
+                        </div>
+                        <div class="w-full bg-gray-200 rounded-full h-2">
+                            <div class="bg-green-500 h-2 rounded-full" style="width: 84%"></div>
+                        </div>
+                    </div>
+                    
+                    <div class="goal-item">
+                        <div class="flex justify-between items-center mb-2">
+                            <span class="text-sm font-medium text-gray-700">Sleep Hours</span>
+                            <span class="text-sm text-gray-600">7.5 / 8 hours</span>
+                        </div>
+                        <div class="w-full bg-gray-200 rounded-full h-2">
+                            <div class="bg-blue-500 h-2 rounded-full" style="width: 94%"></div>
+                        </div>
+                    </div>
+                    
+                    <div class="goal-item">
+                        <div class="flex justify-between items-center mb-2">
+                            <span class="text-sm font-medium text-gray-700">Water Intake</span>
+                            <span class="text-sm text-gray-600">6 / 8 glasses</span>
+                        </div>
+                        <div class="w-full bg-gray-200 rounded-full h-2">
+                            <div class="bg-cyan-500 h-2 rounded-full" style="width: 75%"></div>
+                        </div>
+                    </div>
+                    
+                    <div class="goal-item">
+                        <div class="flex justify-between items-center mb-2">
+                            <span class="text-sm font-medium text-gray-700">Exercise Minutes</span>
+                            <span class="text-sm text-gray-600">25 / 30 min</span>
+                        </div>
+                        <div class="w-full bg-gray-200 rounded-full h-2">
+                            <div class="bg-orange-500 h-2 rounded-full" style="width: 83%"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Achievement Widget -->
+        <section class="slide-in mb-6">
+            <div class="profile-card p-6">
+                <h3 class="text-lg font-semibold text-gray-900 mb-4">Recent Achievements</h3>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div class="text-center p-4 bg-gradient-to-br from-yellow-50 to-yellow-100 rounded-lg">
+                        <div class="w-12 h-12 bg-yellow-200 rounded-full flex items-center justify-center mx-auto mb-3">
+                            <i class="fas fa-trophy text-yellow-600 text-xl"></i>
+                        </div>
+                        <div class="font-semibold text-gray-900 text-sm">Step Master</div>
+                        <div class="text-xs text-gray-600">10k steps in a day</div>
+                        <div class="text-xs text-yellow-600 mt-1">Earned 2 days ago</div>
+                    </div>
+                    
+                    <div class="text-center p-4 bg-gradient-to-br from-green-50 to-green-100 rounded-lg">
+                        <div class="w-12 h-12 bg-green-200 rounded-full flex items-center justify-center mx-auto mb-3">
+                            <i class="fas fa-heart text-green-600 text-xl"></i>
+                        </div>
+                        <div class="font-semibold text-gray-900 text-sm">Health Streak</div>
+                        <div class="text-xs text-gray-600">7 days healthy</div>
+                        <div class="text-xs text-green-600 mt-1">Earned 1 week ago</div>
+                    </div>
+                    
+                    <div class="text-center p-4 bg-gradient-to-br from-blue-50 to-blue-100 rounded-lg">
+                        <div class="w-12 h-12 bg-blue-200 rounded-full flex items-center justify-center mx-auto mb-3">
+                            <i class="fas fa-calendar-check text-blue-600 text-xl"></i>
+                        </div>
+                        <div class="font-semibold text-gray-900 text-sm">Appointment Keeper</div>
+                        <div class="text-xs text-gray-600">All appointments attended</div>
+                        <div class="text-xs text-blue-600 mt-1">Earned 2 weeks ago</div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Connected Devices Widget -->
+        <section class="slide-in mb-6">
+            <div class="profile-card p-6">
+                <h3 class="text-lg font-semibold text-gray-900 mb-4">Connected Devices</h3>
+                <div class="space-y-4">
+                    <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                        <div class="flex items-center space-x-3">
+                            <div class="w-10 h-10 bg-gray-200 rounded-full flex items-center justify-center">
+                                <i class="fas fa-watch text-gray-600"></i>
+                            </div>
+                            <div>
+                                <div class="font-medium text-gray-900">Apple Watch Series 8</div>
+                                <div class="text-sm text-green-600">Connected</div>
+                            </div>
+                        </div>
+                        <div class="text-right">
+                            <div class="text-sm text-gray-600">Battery: 85%</div>
+                            <button onclick="syncDevice('apple-watch')" class="text-xs text-blue-600 hover:underline">Sync</button>
+                        </div>
+                    </div>
+                    
+                    <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                        <div class="flex items-center space-x-3">
+                            <div class="w-10 h-10 bg-gray-200 rounded-full flex items-center justify-center">
+                                <i class="fas fa-heart text-gray-600"></i>
+                            </div>
+                            <div>
+                                <div class="font-medium text-gray-900">Omron BP Monitor</div>
+                                <div class="text-sm text-green-600">Connected</div>
+                            </div>
+                        </div>
+                        <div class="text-right">
+                            <div class="text-sm text-gray-600">Last sync: 2h ago</div>
+                            <button onclick="syncDevice('omron-bp')" class="text-xs text-blue-600 hover:underline">Sync</button>
+                        </div>
+                    </div>
+                    
+                    <div class="flex items-center justify-between p-3 bg-gray-100 rounded-lg border-2 border-dashed border-gray-300">
+                        <div class="flex items-center space-x-3">
+                            <div class="w-10 h-10 bg-gray-200 rounded-full flex items-center justify-center">
+                                <i class="fas fa-plus text-gray-400"></i>
+                            </div>
+                            <div>
+                                <div class="font-medium text-gray-500">Add New Device</div>
+                                <div class="text-sm text-gray-400">Connect a fitness tracker or health device</div>
+                            </div>
+                        </div>
+                        <button onclick="addNewDevice()" class="text-sm bg-blue-600 text-white px-3 py-1 rounded hover:bg-blue-700 transition-colors">
+                            Add Device
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Personal Information -->
+        <section class="slide-in mb-6">
+            <div class="profile-card p-6">
+                <div class="flex items-center justify-between mb-4">
+                    <h3 class="text-lg font-semibold text-gray-900">Personal Information</h3>
+                    <button onclick="editPersonalInfo()" class="text-blue-600 text-sm hover:underline">
+                        <i class="fas fa-edit mr-1"></i>Edit
+                    </button>
+                </div>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div class="info-item">
+                        <label class="text-sm font-medium text-gray-500">Full Name</label>
+                        <p class="text-gray-900">Sarah Elizabeth Johnson</p>
+                    </div>
+                    <div class="info-item">
+                        <label class="text-sm font-medium text-gray-500">Date of Birth</label>
+                        <p class="text-gray-900">March 15, 1992</p>
+                    </div>
+                    <div class="info-item">
+                        <label class="text-sm font-medium text-gray-500">Weight</label>
+                        <p class="text-gray-900">65 kg</p>
+                    </div>
+                    <div class="info-item">
+                        <label class="text-sm font-medium text-gray-500">Height</label>
+                        <p class="text-gray-900">168 cm</p>
+                    </div>
+                    <div class="info-item">
+                        <label class="text-sm font-medium text-gray-500">Blood Group</label>
+                        <p class="text-gray-900">O+</p>
+                    </div>
+                    <div class="info-item">
+                        <label class="text-sm font-medium text-gray-500">Phone</label>
+                        <p class="text-gray-900">+1 (555) 123-4567</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Emergency Contacts -->
+        <section class="slide-in mb-6">
+            <div class="profile-card p-6">
+                <div class="flex items-center justify-between mb-4">
+                    <h3 class="text-lg font-semibold text-gray-900">Emergency Contacts</h3>
+                    <button onclick="addEmergencyContact()" class="text-blue-600 text-sm hover:underline">
+                        <i class="fas fa-plus mr-1"></i>Add Contact
+                    </button>
+                </div>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div class="emergency-contact">
+                        <div class="flex items-center justify-between mb-3">
+                            <h4 class="font-semibold text-gray-900">John Johnson</h4>
+                            <span class="text-sm bg-green-100 text-green-800 px-2 py-1 rounded-full">Spouse</span>
+                        </div>
+                        <p class="text-gray-600 mb-2">+1 (555) 012-3456</p>
+                        <p class="text-sm text-gray-500 mb-3">Primary emergency contact</p>
+                        <div class="flex space-x-2">
+                            <button onclick="callContact('+15550123456')" class="text-blue-600 text-sm hover:underline">
+                                <i class="fas fa-phone mr-1"></i>Call
+                            </button>
+                            <button onclick="editContact(1)" class="text-gray-600 text-sm hover:underline">
+                                <i class="fas fa-edit mr-1"></i>Edit
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="emergency-contact">
+                        <div class="flex items-center justify-between mb-3">
+                            <h4 class="font-semibold text-gray-900">Dr. Emily Chen</h4>
+                            <span class="text-sm bg-blue-100 text-blue-800 px-2 py-1 rounded-full">Primary Care</span>
+                        </div>
+                        <p class="text-gray-600 mb-2">+1 (555) 045-6789</p>
+                        <p class="text-sm text-gray-500 mb-3">Healthcare provider</p>
+                        <div class="flex space-x-2">
+                            <button onclick="callContact('+15550456789')" class="text-blue-600 text-sm hover:underline">
+                                <i class="fas fa-phone mr-1"></i>Call
+                            </button>
+                            <button onclick="editContact(2)" class="text-gray-600 text-sm hover:underline">
+                                <i class="fas fa-edit mr-1"></i>Edit
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Connected Devices -->
+        <section class="slide-in mb-6">
+            <div class="profile-card p-6">
+                <div class="flex items-center justify-between mb-4">
+                    <h3 class="text-lg font-semibold text-gray-900">Connected Devices</h3>
+                    <button onclick="window.location.href='health.html'" class="text-blue-600 text-sm hover:underline">
+                        <i class="fas fa-plus mr-1"></i>Add Device
+                    </button>
+                </div>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div class="device-card p-4">
+                        <div class="flex items-center space-x-3">
+                            <div class="w-12 h-12 bg-white rounded-lg flex items-center justify-center">
+                                <i class="fab fa-apple text-2xl text-gray-700"></i>
+                            </div>
+                            <div class="flex-1">
+                                <h4 class="font-semibold text-gray-900">Apple Watch</h4>
+                                <p class="text-sm text-gray-600">Connected • 85% battery</p>
+                                <p class="text-xs text-gray-500">Last sync: 2 minutes ago</p>
+                            </div>
+                            <div class="w-2 h-2 bg-green-500 rounded-full"></div>
+                        </div>
+                    </div>
+                    
+                    <div class="device-card p-4">
+                        <div class="flex items-center space-x-3">
+                            <div class="w-12 h-12 bg-white rounded-lg flex items-center justify-center">
+                                <i class="fas fa-heartbeat text-2xl text-red-600"></i>
+                            </div>
+                            <div class="flex-1">
+                                <h4 class="font-semibold text-gray-900">Omron BP Monitor</h4>
+                                <p class="text-sm text-gray-600">Connected • Model HEM-7120</p>
+                                <p class="text-xs text-gray-500">Last reading: 5 minutes ago</p>
+                            </div>
+                            <div class="w-2 h-2 bg-green-500 rounded-full"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Insurance Policies -->
+        <section class="slide-in mb-6">
+            <div class="profile-card p-6">
+                <div class="flex items-center justify-between mb-4">
+                    <h3 class="text-lg font-semibold text-gray-900">Insurance Policies</h3>
+                    <button onclick="addInsurance()" class="text-blue-600 text-sm hover:underline">
+                        <i class="fas fa-plus mr-1"></i>Add Policy
+                    </button>
+                </div>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div class="insurance-card p-4">
+                        <div class="flex items-center justify-between mb-3">
+                            <h4 class="font-semibold text-gray-900">BlueCross BlueShield</h4>
+                            <span class="text-sm bg-green-100 text-green-800 px-2 py-1 rounded-full">Active</span>
+                        </div>
+                        <p class="text-sm text-gray-600 mb-2">Policy Number: BC123456789</p>
+                        <p class="text-sm text-gray-600 mb-2">Expiry: December 31, 2025</p>
+                        <p class="text-xs text-gray-500 mb-3">Comprehensive coverage</p>
+                        <div class="flex space-x-2">
+                            <button onclick="viewPolicy(1)" class="text-blue-600 text-sm hover:underline">
+                                <i class="fas fa-eye mr-1"></i>View Details
+                            </button>
+                            <button onclick="downloadCard(1)" class="text-green-600 text-sm hover:underline">
+                                <i class="fas fa-download mr-1"></i>Download Card
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Quick Actions -->
+        <section class="slide-in mb-6">
+            <h3 class="text-xl font-semibold text-gray-900 mb-4">Quick Actions</h3>
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <button onclick="window.location.href='medical-history.html'" class="quick-action-btn p-6 rounded-xl text-white text-center hover:shadow-lg transition-all">
+                    <div class="w-12 h-12 bg-white bg-opacity-20 rounded-full flex items-center justify-center mx-auto mb-3">
+                        <i class="fas fa-file-medical text-xl"></i>
+                    </div>
+                    <div class="font-semibold">Medical History</div>
+                    <div class="text-sm text-blue-100 mt-1">View Records</div>
+                </button>
+
+                <button onclick="window.location.href='health.html'" class="quick-action-btn p-6 rounded-xl text-white text-center hover:shadow-lg transition-all">
+                    <div class="w-12 h-12 bg-white bg-opacity-20 rounded-full flex items-center justify-center mx-auto mb-3">
+                        <i class="fas fa-heartbeat text-xl"></i>
+                    </div>
+                    <div class="font-semibold">Health Data</div>
+                    <div class="text-sm text-blue-100 mt-1">Export Data</div>
+                </button>
+
+                <button onclick="window.location.href='doctors.html'" class="quick-action-btn p-6 rounded-xl text-white text-center hover:shadow-lg transition-all">
+                    <div class="w-12 h-12 bg-white bg-opacity-20 rounded-full flex items-center justify-center mx-auto mb-3">
+                        <i class="fas fa-user-md text-xl"></i>
+                    </div>
+                    <div class="font-semibold">Find Doctors</div>
+                    <div class="text-sm text-blue-100 mt-1">Book Appointment</div>
+                </button>
+
+                <button onclick="window.location.href='emergency.html'" class="quick-action-btn p-6 rounded-xl text-white text-center hover:shadow-lg transition-all">
+                    <div class="w-12 h-12 bg-white bg-opacity-20 rounded-full flex items-center justify-center mx-auto mb-3">
+                        <i class="fas fa-exclamation-triangle text-xl"></i>
+                    </div>
+                    <div class="font-semibold">Emergency</div>
+                    <div class="text-sm text-blue-100 mt-1">Get Help</div>
+                </button>
+            </div>
+        </section>
+
+        <!-- Privacy & Settings -->
+        <section class="slide-in mb-6">
+            <div class="profile-card p-6">
+                <h3 class="text-lg font-semibold text-gray-900 mb-4">Privacy & Settings</h3>
+                
+                <div class="space-y-4">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <h4 class="font-medium text-gray-900">Share Health Data</h4>
+                            <p class="text-sm text-gray-600">Allow sharing with emergency contacts</p>
+                        </div>
+                        <div class="setting-toggle active" onclick="toggleSetting(this)"></div>
+                    </div>
+                    
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <h4 class="font-medium text-gray-900">Weekly Health Reports</h4>
+                            <p class="text-sm text-gray-600">Send reports to emergency contacts</p>
+                        </div>
+                        <div class="setting-toggle active" onclick="toggleSetting(this)"></div>
+                    </div>
+                    
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <h4 class="font-medium text-gray-900">Location Sharing</h4>
+                            <p class="text-sm text-gray-600">Share location during emergencies</p>
+                        </div>
+                        <div class="setting-toggle active" onclick="toggleSetting(this)"></div>
+                    </div>
+                    
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <h4 class="font-medium text-gray-900">Push Notifications</h4>
+                            <p class="text-sm text-gray-600">Receive health alerts and reminders</p>
+                        </div>
+                        <div class="setting-toggle active" onclick="toggleSetting(this)"></div>
+                    </div>
+                    
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <h4 class="font-medium text-gray-900">Data Backup</h4>
+                            <p class="text-sm text-gray-600">Automatically backup health data</p>
+                        </div>
+                        <div class="setting-toggle active" onclick="toggleSetting(this)"></div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Account Actions -->
+        <section class="slide-in">
+            <div class="profile-card p-6">
+                <h3 class="text-lg font-semibold text-gray-900 mb-4">Account</h3>
+                
+                <div class="space-y-3">
+                    <button onclick="exportData()" class="w-full text-left p-3 hover:bg-gray-50 rounded-lg transition-colors">
+                        <div class="flex items-center space-x-3">
+                            <i class="fas fa-download text-blue-600"></i>
+                            <div>
+                                <h4 class="font-medium text-gray-900">Export Health Data</h4>
+                                <p class="text-sm text-gray-600">Download your complete health history</p>
+                            </div>
+                        </div>
+                    </button>
+                    
+                    <button onclick="changePassword()" class="w-full text-left p-3 hover:bg-gray-50 rounded-lg transition-colors">
+                        <div class="flex items-center space-x-3">
+                            <i class="fas fa-key text-green-600"></i>
+                            <div>
+                                <h4 class="font-medium text-gray-900">Change Password</h4>
+                                <p class="text-sm text-gray-600">Update your account password</p>
+                            </div>
+                        </div>
+                    </button>
+                    
+                    <button onclick="privacySettings()" class="w-full text-left p-3 hover:bg-gray-50 rounded-lg transition-colors">
+                        <div class="flex items-center space-x-3">
+                            <i class="fas fa-shield-alt text-purple-600"></i>
+                            <div>
+                                <h4 class="font-medium text-gray-900">Privacy Settings</h4>
+                                <p class="text-sm text-gray-600">Manage data sharing preferences</p>
+                            </div>
+                        </div>
+                    </button>
+                    
+                    <button onclick="helpSupport()" class="w-full text-left p-3 hover:bg-gray-50 rounded-lg transition-colors">
+                        <div class="flex items-center space-x-3">
+                            <i class="fas fa-question-circle text-orange-600"></i>
+                            <div>
+                                <h4 class="font-medium text-gray-900">Help & Support</h4>
+                                <p class="text-sm text-gray-600">Get help and contact support</p>
+                            </div>
+                        </div>
+                    </button>
+                    
+                    <button onclick="signOut()" class="w-full text-left p-3 hover:bg-red-50 rounded-lg transition-colors text-red-600">
+                        <div class="flex items-center space-x-3">
+                            <i class="fas fa-sign-out-alt"></i>
+                            <div>
+                                <h4 class="font-medium">Sign Out</h4>
+                                <p class="text-sm">Sign out of your account</p>
+                            </div>
+                        </div>
+                    </button>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Emergency FAB -->
+    <button onclick="emergencySystem.triggerEmergency()" class="fixed bottom-24 right-6 w-14 h-14 bg-red-600 text-white rounded-full shadow-lg flex items-center justify-center z-40 hover:bg-red-700 transition-colors">
+        <i class="fas fa-exclamation text-xl"></i>
+    </button>
+
+    <!-- Bottom Navigation -->
+    <nav class="bottom-nav fixed bottom-0 left-0 right-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 py-3">
+            <div class="flex justify-around items-center">
+                <a href="index.html" class="nav-item flex flex-col items-center space-y-1 text-gray-600">
+                    <i class="fas fa-home text-xl"></i>
+                    <span class="text-xs font-medium">Home</span>
+                </a>
+                <a href="health.html" class="nav-item flex flex-col items-center space-y-1 text-gray-600">
+                    <i class="fas fa-heartbeat text-xl"></i>
+                    <span class="text-xs font-medium">Health</span>
+                </a>
+                <a href="assistant.html" class="nav-item flex flex-col items-center space-y-1 text-gray-600">
+                    <i class="fas fa-robot text-xl"></i>
+                    <span class="text-xs font-medium">Assistant</span>
+                </a>
+                <a href="doctors.html" class="nav-item flex flex-col items-center space-y-1 text-gray-600">
+                    <i class="fas fa-user-md text-xl"></i>
+                    <span class="text-xs font-medium">Doctors</span>
+                </a>
+                <a href="profile.html" class="nav-item active flex flex-col items-center space-y-1">
+                    <i class="fas fa-user text-xl"></i>
+                    <span class="text-xs font-medium">Profile</span>
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Scripts -->
+    <script src="main.js"></script>
+    <script>
+        // Initialize page
+        document.addEventListener('DOMContentLoaded', function() {
+            loadUserProfile();
+        });
+
+        function loadUserProfile() {
+            const userData = backend.getUserData();
+            
+            // Update profile information
+            document.querySelector('h2').textContent = userData.name;
+            
+            // Update personal info with user data
+            const infoItems = document.querySelectorAll('.info-item p');
+            if (infoItems.length >= 6) {
+                infoItems[0].textContent = userData.name;
+                infoItems[2].textContent = `${userData.weight} kg`;
+                infoItems[3].textContent = `${userData.height} cm`;
+                infoItems[4].textContent = userData.bloodGroup;
+            }
+        }
+
+        function editProfile() {
+            notificationSystem.show('Opening profile editor...', 'info');
+            // In a real app, this would open an edit modal
+        }
+
+        function editPersonalInfo() {
+            notificationSystem.show('Opening personal information editor...', 'info');
+        }
+
+        function addEmergencyContact() {
+            notificationSystem.show('Opening emergency contact form...', 'info');
+        }
+
+        function callContact(phoneNumber) {
+            notificationSystem.show(`Calling ${phoneNumber}...`, 'info');
+            // In a real app, this would initiate a phone call
+        }
+
+        function editContact(contactId) {
+            notificationSystem.show('Opening contact editor...', 'info');
+        }
+
+        function addInsurance() {
+            notificationSystem.show('Opening insurance policy form...', 'info');
+        }
+
+        function viewPolicy(policyId) {
+            notificationSystem.show('Opening policy details...', 'info');
+        }
+
+        function downloadCard(policyId) {
+            notificationSystem.show('Downloading insurance card...', 'info');
+            // Simulate download
+            setTimeout(() => {
+                notificationSystem.show('Insurance card downloaded successfully!', 'success');
+            }, 2000);
+        }
+
+        function toggleSetting(toggleElement) {
+            toggleElement.classList.toggle('active');
+            
+            // Get the setting name from the parent element
+            const settingName = toggleElement.parentElement.querySelector('h4').textContent;
+            const isActive = toggleElement.classList.contains('active');
+            
+            notificationSystem.show(`${settingName} ${isActive ? 'enabled' : 'disabled'}`, 'info');
+        }
+
+        function exportData() {
+            notificationSystem.show('Preparing health data export...', 'info');
+            
+            // Simulate data export
+            setTimeout(() => {
+                const data = {
+                    user: backend.getUserData(),
+                    vitals: backend.getVitals(),
+                    medicalHistory: backend.getMedicalHistory(),
+                    appointments: backend.getAppointments(),
+                    exportDate: new Date().toISOString()
+                };
+                
+                const dataStr = JSON.stringify(data, null, 2);
+                const dataBlob = new Blob([dataStr], { type: 'application/json' });
+                
+                // Create download link
+                const link = document.createElement('a');
+                link.href = URL.createObjectURL(dataBlob);
+                link.download = 'health_data_export.json';
+                link.click();
+                
+                notificationSystem.show('Health data exported successfully!', 'success');
+            }, 3000);
+        }
+
+        function changePassword() {
+            notificationSystem.show('Opening password change form...', 'info');
+        }
+
+        function privacySettings() {
+            notificationSystem.show('Opening privacy settings...', 'info');
+        }
+
+        function helpSupport() {
+            notificationSystem.show('Opening help & support...', 'info');
+        }
+
+        function signOut() {
+            if (confirm('Are you sure you want to sign out?')) {
+                notificationSystem.show('Signing out...', 'info');
+                
+                // Simulate sign out
+                setTimeout(() => {
+                    notificationSystem.show('Signed out successfully!', 'success');
+                    // In a real app, this would redirect to login page
+                }, 2000);
+            }
+        }
+
+        // Widget Functions
+        function editHealthGoals() {
+            notificationSystem.show('Opening health goals editor...', 'info');
+            // In a real app, this would open a modal to edit goals
+        }
+
+        function syncDevice(deviceId) {
+            notificationSystem.show(`Syncing ${deviceId}...`, 'info');
+            
+            setTimeout(() => {
+                notificationSystem.show(`${deviceId} synced successfully!`, 'success');
+                
+                // Update sync status
+                const deviceElement = event.target.closest('.flex');
+                const statusElement = deviceElement.querySelector('.text-sm');
+                if (statusElement) {
+                    statusElement.textContent = 'Just synced';
+                    statusElement.className = 'text-sm text-green-600';
+                }
+            }, 2000);
+        }
+
+        function addNewDevice() {
+            notificationSystem.show('Opening device connection wizard...', 'info');
+            
+            // Simulate device discovery
+            setTimeout(() => {
+                const modal = document.createElement('div');
+                modal.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50';
+                modal.innerHTML = `
+                    <div class="bg-white rounded-xl p-6 max-w-md w-full mx-4">
+                        <h3 class="text-xl font-semibold text-gray-900 mb-4">Add New Device</h3>
+                        <div class="space-y-4">
+                            <div class="p-4 border border-gray-200 rounded-lg hover:bg-gray-50 cursor-pointer">
+                                <div class="flex items-center space-x-3">
+                                    <i class="fas fa-watch text-blue-600 text-xl"></i>
+                                    <div>
+                                        <div class="font-medium text-gray-900">Fitness Tracker</div>
+                                        <div class="text-sm text-gray-600">Track steps, heart rate, sleep</div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="p-4 border border-gray-200 rounded-lg hover:bg-gray-50 cursor-pointer">
+                                <div class="flex items-center space-x-3">
+                                    <i class="fas fa-weight text-green-600 text-xl"></i>
+                                    <div>
+                                        <div class="font-medium text-gray-900">Smart Scale</div>
+                                        <div class="text-sm text-gray-600">Track weight, BMI, body composition</div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="p-4 border border-gray-200 rounded-lg hover:bg-gray-50 cursor-pointer">
+                                <div class="flex items-center space-x-3">
+                                    <i class="fas fa-heartbeat text-red-600 text-xl"></i>
+                                    <div>
+                                        <div class="font-medium text-gray-900">Blood Pressure Monitor</div>
+                                        <div class="text-sm text-gray-600">Monitor blood pressure trends</div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="p-4 border border-gray-200 rounded-lg hover:bg-gray-50 cursor-pointer">
+                                <div class="flex items-center space-x-3">
+                                    <i class="fas fa-syringe text-purple-600 text-xl"></i>
+                                    <div>
+                                        <div class="font-medium text-gray-900">Glucose Monitor</div>
+                                        <div class="text-sm text-gray-600">Track blood sugar levels</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <button onclick="this.closest('.fixed').remove()" class="w-full mt-6 bg-gray-300 text-gray-700 py-2 px-4 rounded-lg hover:bg-gray-400 transition-colors">
+                            Cancel
+                        </button>
+                    </div>
+                `;
+                document.body.appendChild(modal);
+                
+                // Animate in
+                anime({
+                    targets: modal.querySelector('.bg-white'),
+                    scale: [0.8, 1],
+                    opacity: [0, 1],
+                    duration: 300,
+                    easing: 'easeOutQuart'
+                });
+            }, 1000);
+        }
+
+        function updateQuickStats() {
+            // Simulate real-time updates
+            const hrElement = document.getElementById('current-hr');
+            const stepsElement = document.getElementById('today-steps');
+            
+            if (hrElement) {
+                const currentHR = Math.floor(Math.random() * 20) + 65; // 65-85 bpm
+                hrElement.textContent = currentHR;
+            }
+            
+            if (stepsElement) {
+                const currentSteps = Math.floor(Math.random() * 1000) + 8000; // 8000-9000 steps
+                stepsElement.textContent = currentSteps.toLocaleString();
+            }
+        }
+
+        // Initialize page
+        document.addEventListener('DOMContentLoaded', function() {
+            loadPersonalInfo();
+            loadEmergencyContacts();
+            loadConnectedDevices();
+            loadPrivacySettings();
+            
+            // Update quick stats every 30 seconds
+            setInterval(updateQuickStats, 30000);
+            
+            // Initialize with some sample notifications if none exist
+            if (notificationManager.getNotifications().length === 0) {
+                setTimeout(() => {
+                    notificationManager.addNotification('system', 'Welcome to Healthy Nation!', 'Your health journey starts here. Check your vitals and set up your health goals.', { action: 'get_started' });
+                    notificationManager.addNotification('health_alert', 'Health Score Updated', 'Your health score has improved to 85/100. Keep up the great work!', { action: 'view_health' });
+                }, 2000);
+            }
+        });
+</body>
+</html>
